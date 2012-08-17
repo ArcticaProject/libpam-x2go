@@ -40,7 +40,7 @@ get_item (pam_handle_t * pamh, int type)
 		message[0].msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
 	case PAM_TYPE_DOMAIN:
-		message[0].msg = "remote domain:";
+		message[0].msg = "domain:";
 		break;
 	default:
 		return NULL;
