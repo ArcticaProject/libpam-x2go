@@ -7,11 +7,37 @@ AM_SILENT_RULES([yes])
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
+###########################
+# PAM
+###########################
+
 have_pam=no
 AC_CHECK_LIB(pam, pam_getenv, have_pam=yes)
 if test "x$have_pam" = "xno"; then
   AC_MSG_ERROR([Required library PAM was not found])
 fi
+
+###########################
+# Local Install
+###########################
+
+with_localinstall="no"
+AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall],
+                                           [install all files locally (for distcheck)]),
+              with_localinstall=$enableval,
+              with_localinstall=no)
+
+###########################
+# PAM Module dir
+###########################
+
+if test "x$with_localinstall" = "xyes"; then
+	PAMMODULEDIR="${libdir}/security/"
+else
+	PAMMODULEDIR="/lib/security"
+fi
+AC_SUBST(PAMMODULEDIR)
+
 
 AC_CONFIG_FILES([
   Makefile
