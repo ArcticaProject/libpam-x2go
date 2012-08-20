@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
@@ -108,20 +110,24 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	case 0: { /* child */
 		dup2(stdinpipe[0], 0);
 
-		char * args[8];
+		char * args[7];
 
 		args[0] = XFREERDP;
 		args[1] = "--plugin";
 		args[2] = "rdpsnd.so";
 		args[3] = "--no-nla";
 		args[4] = "-f";
-		args[5] = "--ignore-certificate"; /* TODO: Change when we set the home directory properly */
-		args[6] = "--from-stdin";
-		
-		args[7] = NULL;
+		args[5] = "--from-stdin";
+		args[6] = NULL;
+
+		struct passwd * pwdent = getpwnam(username);
+		if (pwdent == NULL) {
+			_exit(-1);
+		}
+
+		setenv("HOME", pwdent->pw_dir, 1);
 
 		/* TODO: Drop privs */
-		/* TODO: Home directory environment to user's home */
 		execvp(args[0], args);
 		_exit(EXIT_FAILURE);
 		break;
