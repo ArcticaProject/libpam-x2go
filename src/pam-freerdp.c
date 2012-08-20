@@ -176,13 +176,19 @@ done:
 	return retval;
 }
 
+pid_t session_pid = 0;
 /* Open Session.  Here we need to fork a little process so that we can
    give the credentials to the session itself so that it can startup the
    xfreerdp viewer for the login */
 PAM_EXTERN int
 pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-     return PAM_IGNORE;
+	if (session_pid != 0) {
+		kill(session_pid, SIGKILL);
+		session_pid = 0;
+	}
+
+    return PAM_IGNORE;
 }
 
 /* Close Session.  Make sure our little guy has died so he doesn't become
@@ -190,6 +196,11 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
 PAM_EXTERN int
 pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
+	if (session_pid != 0) {
+		kill(session_pid, SIGKILL);
+		session_pid = 0;
+	}
+
 	return PAM_IGNORE;
 }
 
