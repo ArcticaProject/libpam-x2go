@@ -7,6 +7,8 @@ AM_SILENT_RULES([yes])
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
+LT_INIT([disable-static])
+
 ###########################
 # PAM
 ###########################
