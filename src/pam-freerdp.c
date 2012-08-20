@@ -16,45 +16,48 @@ get_item (pam_handle_t * pamh, int type)
 	/* Check to see if we just have the value.  If we do, great
 	   let's dup it some we're consitently allocating memory */
 	if (type != PAM_TYPE_DOMAIN) {
-		char * value;
-		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS) {
+		char * value = NULL;
+		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return strdup(value);
 		}
 	}
 	/* Now we need to prompt */
 
 	/* Build up the message we're prompting for */
-	struct pam_message message[1];
-	message[0].msg_style = PAM_PROMPT_ECHO_ON;
+	struct pam_message message;
+	const struct pam_message * pmessage = &message;
+
+	message.msg = NULL;
+	message.msg_style = PAM_PROMPT_ECHO_ON;
 
 	switch (type) {
 	case PAM_USER:
-		message[0].msg = "login:";
+		message.msg = "login:";
 		break;
 	case PAM_RUSER:
-		message[0].msg = "remote login:";
+		message.msg = "remote login:";
 		break;
 	case PAM_RHOST:
-		message[0].msg = "remote host:";
+		message.msg = "remote host:";
 		break;
 	case PAM_AUTHTOK:
-		message[0].msg = "password:";
-		message[0].msg_style = PAM_PROMPT_ECHO_OFF;
+		message.msg = "password:";
+		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
 	case PAM_TYPE_DOMAIN:
-		message[0].msg = "domain:";
+		message.msg = "domain:";
 		break;
 	default:
 		return NULL;
 	}
 
-	struct pam_conv * conv;
-	if (pam_get_item(pamh, PAM_CONV, (const void **)&conv) != PAM_SUCCESS) {
+	struct pam_conv * conv = NULL;
+	if (pam_get_item(pamh, PAM_CONV, (const void **)&conv) != PAM_SUCCESS || conv == NULL || conv->conv == NULL) {
 		return NULL;
 	}
 
 	struct pam_response * responses = NULL;
-	if (conv->conv(1, (const struct pam_message **)&message, &responses, conv->appdata_ptr) != PAM_SUCCESS) {
+	if (conv->conv(1, &pmessage, &responses, conv->appdata_ptr) != PAM_SUCCESS) {
 		return NULL;
 	}
 
@@ -166,7 +169,7 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 
 #ifdef PAM_STATIC
 
-struct pam_module _pam_temp_account_modstruct = {
+struct pam_module _pam_freerdp_modstruct = {
      "pam-freerdp",
      pam_sm_authenticate,
      NULL,
