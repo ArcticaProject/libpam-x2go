@@ -48,13 +48,13 @@ get_item (pam_handle_t * pamh, int type)
 		return NULL;
 	}
 
-	struct pam_conv conv;
+	struct pam_conv * conv;
 	if (pam_get_item(pamh, PAM_CONV, (const void **)&conv) != PAM_SUCCESS) {
 		return NULL;
 	}
 
 	struct pam_response * responses = NULL;
-	if (conv.conv(1, (const struct pam_message **)&message, &responses, conv.appdata_ptr) != PAM_SUCCESS) {
+	if (conv->conv(1, (const struct pam_message **)&message, &responses, conv->appdata_ptr) != PAM_SUCCESS) {
 		return NULL;
 	}
 
