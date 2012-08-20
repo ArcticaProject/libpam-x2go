@@ -1,4 +1,4 @@
-pam-freerdp-[0-9].[0-9].[0-9].tar.gz
-src/pam-freerdp.la
+libpam-freerdp-[0-9].[0-9].[0-9].tar.gz
+src/pam_freerdp.la
 src/pam_freerdp_la-pam-freerdp.lo
 src/pam_freerdp_la-pam-freerdp.o

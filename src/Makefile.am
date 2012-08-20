@@ -1,6 +1,6 @@
 
 pamlibdir = $(PAMMODULEDIR)
-pamlib_LTLIBRARIES = pam-freerdp.la
+pamlib_LTLIBRARIES = pam_freerdp.la
 
 pam_freerdp_la_SOURCES = \
 	pam-freerdp.c
