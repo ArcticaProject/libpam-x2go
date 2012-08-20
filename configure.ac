@@ -1,4 +1,4 @@
-AC_INIT([pam-freerdp], [0.0.1])
+AC_INIT([libpam-freerdp], [0.0.1])
 AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE([1.11 -Wno-portability])
