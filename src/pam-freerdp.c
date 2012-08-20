@@ -122,12 +122,16 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 
 		struct passwd * pwdent = getpwnam(username);
 		if (pwdent == NULL) {
-			_exit(-1);
+			_exit(EXIT_FAILURE);
+		}
+
+		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			_exit(EXIT_FAILURE);
 		}
 
 		setenv("HOME", pwdent->pw_dir, 1);
 
-		/* TODO: Drop privs */
 		execvp(args[0], args);
 		_exit(EXIT_FAILURE);
 		break;
