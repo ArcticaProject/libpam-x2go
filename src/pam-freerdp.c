@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -95,27 +96,29 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	GET_ITEM(rdomain,  PAM_TYPE_DOMAIN);
 	GET_ITEM(password, PAM_AUTHTOK);
 
+	int stdinpipe[2];
+	if (pipe(stdinpipe) != 0) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
 	/* At this point we should have the values, let's check the auth */
 	pid_t pid;
 	switch (pid = fork()) {
 	case 0: { /* child */
-		char * args[13];
+		dup2(stdinpipe[0], 0);
+
+		char * args[8];
+
 		args[0] = XFREERDP;
 		args[1] = "--plugin";
 		args[2] = "rdpsnd.so";
 		args[3] = "--no-nla";
 		args[4] = "-f";
 		args[5] = "--ignore-certificate"; /* TODO: Change when we set the home directory properly */
+		args[6] = "--from-stdin";
 		
-		/* TODO: Use stdin */
-		args[6] = "-u";
-		args[7] = ruser;
-		args[8] = "-p";
-		args[9] = password;
-		args[10] = "-d";
-		args[11] = rdomain;
-
-		args[12] = NULL;
+		args[7] = NULL;
 
 		/* TODO: Drop privs */
 		/* TODO: Home directory environment to user's home */
@@ -129,7 +132,20 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	}
 	default: {
 		int forkret = 0;
-		if (waitpid(pid, &forkret, 0) < 0) {
+		int bytesout = 0;
+
+		bytesout += write(stdinpipe[1], ruser, strlen(ruser));
+		bytesout += write(stdinpipe[1], " ", 1);
+		bytesout += write(stdinpipe[1], password, strlen(password));
+		bytesout += write(stdinpipe[1], " ", 1);
+		bytesout += write(stdinpipe[1], rdomain, strlen(rdomain));
+		bytesout += write(stdinpipe[1], " ", 1);
+		bytesout += write(stdinpipe[1], rhost, strlen(rhost));
+		bytesout += write(stdinpipe[1], " ", 1);
+
+		close(stdinpipe[1]);
+
+		if (waitpid(pid, &forkret, 0) < 0 || bytesout == 0) {
 			retval = PAM_SYSTEM_ERR;
 		} else if (forkret == 0) {
 			retval = PAM_SUCCESS;
