@@ -14,7 +14,8 @@ pam_freerdp_la_LIBADD = \
 	-lpam
 
 pam_freerdp_la_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
+	-DAUTH_CHECK="\"$(pkglibexecdir)/freerdp-auth-check\""
 
 pkglibexec_PROGRAMS = \
 	freerdp-auth-check
