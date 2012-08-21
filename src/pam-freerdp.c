@@ -248,6 +248,11 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 
 	pid_t pid = fork();
 	if (pid == 0) {
+		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
 		if (listen(socketfd, 1) < 0) {
 			_exit(EXIT_FAILURE);
 		}
