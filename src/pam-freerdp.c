@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <pwd.h>
 
 #include <security/pam_modules.h>
@@ -181,14 +183,111 @@ pid_t session_pid = 0;
    give the credentials to the session itself so that it can startup the
    xfreerdp viewer for the login */
 PAM_EXTERN int
-pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
+pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv)
 {
 	if (session_pid != 0) {
 		kill(session_pid, SIGKILL);
 		session_pid = 0;
 	}
 
-    return PAM_IGNORE;
+	char * username = NULL;
+	char * password = NULL;
+	char * ruser = NULL;
+	char * rhost = NULL;
+	char * rdomain = NULL;
+	int retval = PAM_SUCCESS;
+
+	/* Get all the values, or prompt for them, or return with
+	   an auth error */
+	GET_ITEM(username, PAM_USER);
+	GET_ITEM(ruser,    PAM_RUSER);
+	GET_ITEM(rhost,    PAM_RHOST);
+	GET_ITEM(rdomain,  PAM_TYPE_DOMAIN);
+	GET_ITEM(password, PAM_AUTHTOK);
+
+	struct passwd * pwdent = getpwnam(username);
+	if (pwdent == NULL) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+	
+	/* Make our socket and bind it */
+	int socketfd;
+	struct sockaddr_un socket_addr;
+
+	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (socketfd < 0) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
+	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
+	socket_addr.sun_family = AF_UNIX;
+	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
+	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", sizeof(socket_addr.sun_path) - 1);
+
+	/* We bind the socket before forking so that we ensure that
+	   there isn't a race condition to get to it.  Things will block
+	   otherwise. */
+	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
+		close(socketfd);
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
+	/* Build this up as a buffer so we can just write it and see that
+	   very, very clearly */
+	int buffer_len = 0;
+	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
+	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
+	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
+	buffer_len += strlen(password) + 1; /* Add one for the NULL */
+
+	char * buffer = malloc(buffer_len);
+	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
+
+	pid_t pid = fork();
+	if (pid == 0) {
+		if (listen(socketfd, 1) < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		socklen_t connected_addr_size;
+		int connectfd;
+		struct sockaddr_un connected_addr;
+
+		connected_addr_size = sizeof(struct sockaddr_un);
+		connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
+		if (connectfd < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		int writedata;
+		writedata = write(connectfd, buffer, buffer_len);
+
+		close(connectfd);
+		close(socketfd);
+		free(buffer);
+
+		if (writedata == buffer_len) {
+			_exit(0);
+		} else {
+			_exit(EXIT_FAILURE);
+		}
+	} else if (pid < 0) {
+		retval = PAM_SYSTEM_ERR;
+	} else {
+		session_pid = pid;
+	}
+
+done:
+	if (username != NULL) { free(username); }
+	if (password != NULL) { free(password); }
+	if (ruser != NULL)    { free(ruser); }
+	if (rhost != NULL)    { free(rhost); }
+	if (rdomain != NULL)  { free(rdomain); }
+
+    return retval;
 }
 
 /* Close Session.  Make sure our little guy has died so he doesn't become
