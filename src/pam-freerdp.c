@@ -162,7 +162,8 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 		int forkret = 0;
 		int bytesout = 0;
 
-		bytesout = write(stdinpipe[1], password, strlen(password));
+		bytesout += write(stdinpipe[1], password, strlen(password));
+		bytesout += write(stdinpipe[1], "\n", 1);
 
 		close(stdinpipe[1]);
 
