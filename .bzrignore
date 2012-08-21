@@ -4,3 +4,4 @@ src/pam_freerdp.la
 src/pam_freerdp_la-pam-freerdp.lo
 src/pam_freerdp_la-pam-freerdp.o
 src/pam-freerdp.la
+freerdp-auth-check
