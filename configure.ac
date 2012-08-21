@@ -20,6 +20,12 @@ if test "x$have_pam" = "xno"; then
 fi
 
 ###########################
+# FreeRDP
+###########################
+
+PKG_CHECK_MODULES(FREERDP, freerdp)
+
+###########################
 # Local Install
 ###########################
 
