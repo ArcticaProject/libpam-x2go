@@ -299,6 +299,8 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 		}
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
+		close(socketfd);
+		free(buffer);
 	} else {
 		session_pid = pid;
 	}
