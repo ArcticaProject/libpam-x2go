@@ -86,6 +86,23 @@ get_item (pam_handle_t * pamh, int type)
 
 	char * retval = responses->resp;
 	free(responses);
+
+	if (type == PAM_RHOST) {
+		if (strncmp(retval, "http://", strlen("http://")) == 0) {
+			char * original = retval;
+			char * newish = retval + strlen("http://");
+			char * c;
+			for (c = newish; *c != '\0'; c++) {
+				if (*c == '/') {
+					*c = '\0';
+					break;
+				}
+			}
+			retval = strdup(newish);
+			free(original);
+		}
+	}
+
 	return retval;
 }
 
