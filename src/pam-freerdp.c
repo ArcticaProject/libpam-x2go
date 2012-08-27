@@ -88,9 +88,10 @@ get_item (pam_handle_t * pamh, int type)
 	free(responses);
 
 	if (type == PAM_RHOST) {
-		if (strncmp(retval, "http://", strlen("http://")) == 0) {
+		char * subloc = NULL;
+		if ((subloc = strstr(retval, "://")) != NULL) {
 			char * original = retval;
-			char * newish = retval + strlen("http://");
+			char * newish = retval + strlen("://");
 			char * c;
 			for (c = newish; *c != '\0'; c++) {
 				if (*c == '/') {
