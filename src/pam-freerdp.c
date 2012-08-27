@@ -88,14 +88,14 @@ get_item (pam_handle_t * pamh, int type)
 	free(responses);
 
 	if (type == PAM_RHOST) {
-		char * subloc = NULL;
-		if ((subloc = strstr(retval, "://")) != NULL) {
+		char * subloc = strstr(retval, "://");
+		if (subloc != NULL) {
 			char * original = retval;
-			char * newish = retval + strlen("://");
-			char * c = strstr(newish, "/");
+			char * newish = subloc + strlen("://");
+			char * endslash = strstr(newish, "/");
 
-			if (c != NULL) {
-				c[0] = '\0';
+			if (endslash != NULL) {
+				endslash[0] = '\0';
 			}
 
 			retval = strdup(newish);
