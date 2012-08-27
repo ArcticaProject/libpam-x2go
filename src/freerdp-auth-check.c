@@ -79,6 +79,15 @@ main (int argc, char * argv[])
 	instance->settings->password = password;
 	instance->settings->ignore_certificate = true;
 
+	char * colonloc = strstr(argv[1], ":");
+	if (colonloc != NULL) {
+		/* We've got a port to deal with */
+		colonloc[0] = '\0';
+		colonloc++;
+
+		instance->settings->port = strtoul(colonloc, NULL, 10);
+	}
+
 	if (freerdp_connect(instance)) {
 		freerdp_disconnect(instance);
 		return 0;
