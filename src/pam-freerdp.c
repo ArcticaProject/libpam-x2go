@@ -92,13 +92,12 @@ get_item (pam_handle_t * pamh, int type)
 		if ((subloc = strstr(retval, "://")) != NULL) {
 			char * original = retval;
 			char * newish = retval + strlen("://");
-			char * c;
-			for (c = newish; *c != '\0'; c++) {
-				if (*c == '/') {
-					*c = '\0';
-					break;
-				}
+			char * c = strstr(newish, "/");
+
+			if (c != NULL) {
+				c[0] = '\0';
 			}
+
 			retval = strdup(newish);
 			free(original);
 		}
