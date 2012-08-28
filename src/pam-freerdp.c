@@ -337,12 +337,20 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 	return PAM_IGNORE;
 }
 
+/* LightDM likes to have this function around, but we don't need it as we
+   don't have a token hanging around. */
+PAM_EXTERN int
+pam_sm_setcred (pam_handle_t *pamh, int flags, int argc, const char ** argv)
+{
+	return PAM_SUCCESS;
+}
+
 #ifdef PAM_STATIC
 
 struct pam_module _pam_freerdp_modstruct = {
-     "pam-freerdp",
+     "pam_freerdp",
      pam_sm_authenticate,
-     NULL,
+     pam_sm_setcred,
      NULL,
      pam_sm_open_session,
      pam_sm_close_session,
