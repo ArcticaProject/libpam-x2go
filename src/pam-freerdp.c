@@ -23,6 +23,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <pwd.h>
 
@@ -257,6 +258,15 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	   there isn't a race condition to get to it.  Things will block
 	   otherwise. */
 	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
+		close(socketfd);
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
+	/* Set the socket file permissions to be 600 and the user and group
+	   to be the guest user.  NOTE: This won't protect on BSD */
+	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
+			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
 		close(socketfd);
 		retval = PAM_SYSTEM_ERR;
 		goto done;
