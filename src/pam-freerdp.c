@@ -283,7 +283,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
 	socket_addr.sun_family = AF_UNIX;
 	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
-	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", sizeof(socket_addr.sun_path) - 1);
+	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
 
 	/* We bind the socket before forking so that we ensure that
 	   there isn't a race condition to get to it.  Things will block
