@@ -86,7 +86,7 @@ get_item (pam_handle_t * pamh, int type)
 	}
 
 	struct pam_response * responses = NULL;
-	if (conv->conv(1, &pmessage, &responses, conv->appdata_ptr) != PAM_SUCCESS) {
+	if (conv->conv(1, &pmessage, &responses, conv->appdata_ptr) != PAM_SUCCESS || responses == NULL) {
 		return NULL;
 	}
 
