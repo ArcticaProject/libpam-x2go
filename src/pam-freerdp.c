@@ -129,9 +129,6 @@ get_item (pam_handle_t * pamh, int type)
 		goto done; \
 	}
 
-/* TODO: Make this a build thing */
-#define XFREERDP "/usr/bin/xfreerdp"
-
 /* Authenticate.  We need to make sure we have a user account, that
    there are remote accounts and then verify them with FreeRDP */
 PAM_EXTERN int
