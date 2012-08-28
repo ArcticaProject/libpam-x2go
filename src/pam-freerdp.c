@@ -32,6 +32,8 @@
 
 #define PAM_TYPE_DOMAIN  1234
 
+static char * global_domain = NULL;
+
 /* Either grab a value or prompt for it */
 static char *
 get_item (pam_handle_t * pamh, int type)
@@ -42,6 +44,10 @@ get_item (pam_handle_t * pamh, int type)
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return strdup(value);
+		}
+	} else {
+		if (global_domain != NULL) {
+			return strdup(global_domain);
 		}
 	}
 	/* Now we need to prompt */
@@ -100,6 +106,17 @@ get_item (pam_handle_t * pamh, int type)
 
 			retval = strdup(newish);
 			free(original);
+		}
+	}
+
+	if (retval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
+		if (type != PAM_TYPE_DOMAIN) {
+			pam_set_item(pamh, type, (const void *)retval);
+		} else {
+			if (global_domain != NULL) {
+				free(global_domain);
+			}
+			global_domain = strdup(retval);
 		}
 	}
 
