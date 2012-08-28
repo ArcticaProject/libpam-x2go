@@ -23,6 +23,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/mman.h>
 #include <sys/un.h>
 #include <pwd.h>
 
@@ -128,9 +129,12 @@ get_item (pam_handle_t * pamh, int type)
 		}
 		if (type == PAM_AUTHTOK) {
 			if (global_password != NULL) {
+				memset(global_password, 0, strlen(global_password));
+				munlock(global_password, strlen(global_password));
 				free(global_password);
 			}
 			global_password = strdup(retval);
+			mlock(global_password, strlen(global_password));
 		}
 	}
 
