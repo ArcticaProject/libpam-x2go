@@ -33,6 +33,11 @@
 #define PAM_TYPE_DOMAIN  1234
 
 static char * global_domain = NULL;
+/* FIXME? This is a work around to the fact that PAM seems to be clearing
+   the auth token between authorize and open_session.  Which then requires
+   us to save it.  Seems like we're the wrong people to do it, but we have
+   no choice */
+static char * global_password = NULL;
 
 /* Either grab a value or prompt for it */
 static char *
@@ -44,6 +49,9 @@ get_item (pam_handle_t * pamh, int type)
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return strdup(value);
+		}
+		if (type == PAM_AUTHTOK && global_password != NULL) {
+			return strdup(global_password);
 		}
 	} else {
 		if (global_domain != NULL) {
@@ -117,6 +125,12 @@ get_item (pam_handle_t * pamh, int type)
 				free(global_domain);
 			}
 			global_domain = strdup(retval);
+		}
+		if (type == PAM_AUTHTOK) {
+			if (global_password != NULL) {
+				free(global_password);
+			}
+			global_password = strdup(retval);
 		}
 	}
 
