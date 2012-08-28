@@ -86,6 +86,23 @@ get_item (pam_handle_t * pamh, int type)
 
 	char * retval = responses->resp;
 	free(responses);
+
+	if (type == PAM_RHOST) {
+		char * subloc = strstr(retval, "://");
+		if (subloc != NULL) {
+			char * original = retval;
+			char * newish = subloc + strlen("://");
+			char * endslash = strstr(newish, "/");
+
+			if (endslash != NULL) {
+				endslash[0] = '\0';
+			}
+
+			retval = strdup(newish);
+			free(original);
+		}
+	}
+
 	return retval;
 }
 
