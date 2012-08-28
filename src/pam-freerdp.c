@@ -49,14 +49,14 @@ get_item (pam_handle_t * pamh, int type)
 	if (type != PAM_TYPE_DOMAIN) {
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
-			return strdup(value);
+			return value;
 		}
 		if (type == PAM_AUTHTOK && global_password != NULL) {
-			return strdup(global_password);
+			return global_password;
 		}
 	} else {
 		if (global_domain != NULL) {
-			return strdup(global_domain);
+			return global_domain;
 		}
 	}
 	/* Now we need to prompt */
@@ -99,13 +99,13 @@ get_item (pam_handle_t * pamh, int type)
 		return NULL;
 	}
 
-	char * retval = responses->resp;
+	char * promptval = responses->resp;
 	free(responses);
 
 	if (type == PAM_RHOST) {
-		char * subloc = strstr(retval, "://");
+		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
-			char * original = retval;
+			char * original = promptval;
 			char * newish = subloc + strlen("://");
 			char * endslash = strstr(newish, "/");
 
@@ -113,19 +113,23 @@ get_item (pam_handle_t * pamh, int type)
 				endslash[0] = '\0';
 			}
 
-			retval = strdup(newish);
+			promptval = strdup(newish);
 			free(original);
 		}
 	}
 
-	if (retval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
+	char * retval = NULL;
+	if (promptval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
 		if (type != PAM_TYPE_DOMAIN) {
-			pam_set_item(pamh, type, (const void *)retval);
+			pam_set_item(pamh, type, (const void *)promptval);
+			/* We're returning the value saved by PAM so we can clear promptval */
+			pam_get_item(pamh, type, (const void **)&retval);
 		} else {
 			if (global_domain != NULL) {
 				free(global_domain);
 			}
-			global_domain = strdup(retval);
+			global_domain = strdup(promptval);
+			retval = global_domain;
 		}
 		if (type == PAM_AUTHTOK) {
 			if (global_password != NULL) {
@@ -133,9 +137,12 @@ get_item (pam_handle_t * pamh, int type)
 				munlock(global_password, strlen(global_password));
 				free(global_password);
 			}
-			global_password = strdup(retval);
+			global_password = strdup(promptval);
 			mlock(global_password, strlen(global_password));
+			retval = global_password;
 		}
+
+		free(promptval);
 	}
 
 	return retval;
@@ -226,14 +233,8 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	}
 	}
 
-	/* Free Memory and return our status */
+	/* Return our status */
 done:
-	if (username != NULL) { free(username); }
-	if (password != NULL) { free(password); }
-	if (ruser != NULL)    { free(ruser); }
-	if (rhost != NULL)    { free(rhost); }
-	if (rdomain != NULL)  { free(rdomain); }
-
 	return retval;
 }
 
@@ -347,12 +348,6 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	}
 
 done:
-	if (username != NULL) { free(username); }
-	if (password != NULL) { free(password); }
-	if (ruser != NULL)    { free(ruser); }
-	if (rhost != NULL)    { free(rhost); }
-	if (rdomain != NULL)  { free(rdomain); }
-
     return retval;
 }
 
