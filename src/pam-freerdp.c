@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <sys/un.h>
 #include <pwd.h>
 
@@ -32,6 +33,13 @@
 #include <security/pam_appl.h>
 
 #define PAM_TYPE_DOMAIN  1234
+
+static char * global_domain = NULL;
+/* FIXME? This is a work around to the fact that PAM seems to be clearing
+   the auth token between authorize and open_session.  Which then requires
+   us to save it.  Seems like we're the wrong people to do it, but we have
+   no choice */
+static char * global_password = NULL;
 
 /* Either grab a value or prompt for it */
 static char *
@@ -43,6 +51,13 @@ get_item (pam_handle_t * pamh, int type)
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return strdup(value);
+		}
+		if (type == PAM_AUTHTOK && global_password != NULL) {
+			return strdup(global_password);
+		}
+	} else {
+		if (global_domain != NULL) {
+			return strdup(global_domain);
 		}
 	}
 	/* Now we need to prompt */
@@ -81,7 +96,7 @@ get_item (pam_handle_t * pamh, int type)
 	}
 
 	struct pam_response * responses = NULL;
-	if (conv->conv(1, &pmessage, &responses, conv->appdata_ptr) != PAM_SUCCESS) {
+	if (conv->conv(1, &pmessage, &responses, conv->appdata_ptr) != PAM_SUCCESS || responses == NULL) {
 		return NULL;
 	}
 
@@ -104,6 +119,26 @@ get_item (pam_handle_t * pamh, int type)
 		}
 	}
 
+	if (retval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
+		if (type != PAM_TYPE_DOMAIN) {
+			pam_set_item(pamh, type, (const void *)retval);
+		} else {
+			if (global_domain != NULL) {
+				free(global_domain);
+			}
+			global_domain = strdup(retval);
+		}
+		if (type == PAM_AUTHTOK) {
+			if (global_password != NULL) {
+				memset(global_password, 0, strlen(global_password));
+				munlock(global_password, strlen(global_password));
+				free(global_password);
+			}
+			global_password = strdup(retval);
+			mlock(global_password, strlen(global_password));
+		}
+	}
+
 	return retval;
 }
 
@@ -112,9 +147,6 @@ get_item (pam_handle_t * pamh, int type)
 		retval = PAM_AUTH_ERR; \
 		goto done; \
 	}
-
-/* TODO: Make this a build thing */
-#define XFREERDP "/usr/bin/xfreerdp"
 
 /* Authenticate.  We need to make sure we have a user account, that
    there are remote accounts and then verify them with FreeRDP */
