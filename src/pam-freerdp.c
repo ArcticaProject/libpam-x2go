@@ -48,14 +48,20 @@ get_item (pam_handle_t * pamh, int type)
 	/* Check to see if we just have the value.  If we do, great
 	   let's dup it some we're consitently allocating memory */
 	if (type != PAM_TYPE_DOMAIN) {
+		/* If it's not a domain we can use the PAM functions because the PAM
+		   functions don't support the domain */
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return value;
 		}
 		if (type == PAM_AUTHTOK && global_password != NULL) {
+			/* If we're looking for a password, we didn't get one, before
+			   prompting see if we've got a global one. */
 			return global_password;
 		}
 	} else {
+		/* Here we only have domains, so we can see if the global domain is
+		   useful for us, if we have it */
 		if (global_domain != NULL) {
 			return global_domain;
 		}
@@ -122,10 +128,13 @@ get_item (pam_handle_t * pamh, int type)
 	char * retval = NULL;
 	if (promptval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
 		if (type != PAM_TYPE_DOMAIN) {
+			/* We can only use the PAM functions if it's not the domain */
 			pam_set_item(pamh, type, (const void *)promptval);
 			/* We're returning the value saved by PAM so we can clear promptval */
 			pam_get_item(pamh, type, (const void **)&retval);
-		} else {
+		}
+		if (type == PAM_TYPE_DOMAIN) {
+			/* The domain can be saved globally so we can use it for open */
 			if (global_domain != NULL) {
 				free(global_domain);
 			}
@@ -133,6 +142,7 @@ get_item (pam_handle_t * pamh, int type)
 			retval = global_domain;
 		}
 		if (type == PAM_AUTHTOK) {
+			/* We also save the password globally if we've got one */
 			if (global_password != NULL) {
 				memset(global_password, 0, strlen(global_password));
 				munlock(global_password, strlen(global_password));
