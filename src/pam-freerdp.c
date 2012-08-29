@@ -284,7 +284,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
 	socket_addr.sun_family = AF_UNIX;
 	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
-	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", sizeof(socket_addr.sun_path) - 1);
+	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
 
 	/* We bind the socket before forking so that we ensure that
 	   there isn't a race condition to get to it.  Things will block
@@ -313,10 +313,15 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	buffer_len += strlen(password) + 1; /* Add one for the NULL */
 
 	char * buffer = malloc(buffer_len);
+	/* Lock the buffer before writing */
+	mlock(buffer, buffer_len);
 	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
 
 	pid_t pid = fork();
 	if (pid == 0) {
+		/* Locks to carry over */
+		mlock(buffer, buffer_len);
+
 		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 			_exit(EXIT_FAILURE);
@@ -351,10 +356,13 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
 		close(socketfd);
-		free(buffer);
 	} else {
 		session_pid = pid;
 	}
+
+	memset(buffer, 0, buffer_len);
+	munlock(buffer, buffer_len);
+	free(buffer);
 
 done:
 	if (username != NULL) { free(username); }
