@@ -250,17 +250,45 @@ done:
 }
 
 static int
-session_socket_handler (const char * buffer, int buffer_len, struct passwd * pwdent, int socketfd)
+session_socket_handler (const char * buffer, int buffer_len, struct passwd * pwdent)
 {
-	/* Locks to carry over */
-	mlock(buffer, buffer_len);
-
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 		return EXIT_FAILURE;
 	}
 
+	/* Make our socket and bind it */
+	int socketfd;
+	struct sockaddr_un socket_addr;
+
+	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (socketfd < 0) {
+		return EXIT_FAILURE;
+	}
+
+	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
+	socket_addr.sun_family = AF_UNIX;
+	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
+	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
+
+	/* We bind the socket before forking so that we ensure that
+	   there isn't a race condition to get to it.  Things will block
+	   otherwise. */
+	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
+		close(socketfd);
+		return EXIT_FAILURE;
+	}
+
+	/* Set the socket file permissions to be 600 and the user and group
+	   to be the guest user.  NOTE: This won't protect on BSD */
+	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
+			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
+		close(socketfd);
+		return EXIT_FAILURE;
+	}
+
 	if (listen(socketfd, 1) < 0) {
+		close(socketfd);
 		return EXIT_FAILURE;
 	}
 
@@ -271,12 +299,14 @@ session_socket_handler (const char * buffer, int buffer_len, struct passwd * pwd
 	connected_addr_size = sizeof(struct sockaddr_un);
 	connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
 	if (connectfd < 0) {
+		close(socketfd);
 		return EXIT_FAILURE;
 	}
 
 	int writedata;
 	writedata = write(connectfd, buffer, buffer_len);
 
+	close(socketfd);
 	close(connectfd);
 
 	if (writedata == buffer_len) {
@@ -319,39 +349,6 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 		goto done;
 	}
 	
-	/* Make our socket and bind it */
-	int socketfd;
-	struct sockaddr_un socket_addr;
-
-	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (socketfd < 0) {
-		retval = PAM_SYSTEM_ERR;
-		goto done;
-	}
-
-	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
-	socket_addr.sun_family = AF_UNIX;
-	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
-	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
-
-	/* We bind the socket before forking so that we ensure that
-	   there isn't a race condition to get to it.  Things will block
-	   otherwise. */
-	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
-		close(socketfd);
-		retval = PAM_SYSTEM_ERR;
-		goto done;
-	}
-
-	/* Set the socket file permissions to be 600 and the user and group
-	   to be the guest user.  NOTE: This won't protect on BSD */
-	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
-			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
-		close(socketfd);
-		retval = PAM_SYSTEM_ERR;
-		goto done;
-	}
-
 	/* Build this up as a buffer so we can just write it and see that
 	   very, very clearly */
 	int buffer_len = 0;
@@ -369,15 +366,18 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	if (pid == 0) {
 		int retval = 0;
 
-		retval = session_socket_handler(buffer, buffer_len, pwdent, socketfd);
+		/* Locks to carry over */
+		mlock(buffer, buffer_len);
 
-		close(socketfd);
+		retval = session_socket_handler(buffer, buffer_len, pwdent);
+
+		munlock(buffer, buffer_len);
+		memset(buffer, 0, buffer_len);
 		free(buffer);
 
 		_exit(retval);
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
-		close(socketfd);
 	} else {
 		session_pid = pid;
 	}
