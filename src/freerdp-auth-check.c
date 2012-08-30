@@ -81,7 +81,6 @@ main (int argc, char * argv[])
 	instance->settings->username = argv[2];
 	instance->settings->domain = argv[3];
 	instance->settings->password = password;
-	instance->settings->ignore_certificate = true;
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
