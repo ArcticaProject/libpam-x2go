@@ -249,6 +249,43 @@ done:
 	return retval;
 }
 
+static int
+session_socket_handler (const char * buffer, int buffer_len, struct passwd * pwdent, int socketfd)
+{
+	/* Locks to carry over */
+	mlock(buffer, buffer_len);
+
+	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+		return EXIT_FAILURE;
+	}
+
+	if (listen(socketfd, 1) < 0) {
+		return EXIT_FAILURE;
+	}
+
+	socklen_t connected_addr_size;
+	int connectfd;
+	struct sockaddr_un connected_addr;
+
+	connected_addr_size = sizeof(struct sockaddr_un);
+	connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
+	if (connectfd < 0) {
+		return EXIT_FAILURE;
+	}
+
+	int writedata;
+	writedata = write(connectfd, buffer, buffer_len);
+
+	close(connectfd);
+
+	if (writedata == buffer_len) {
+		return 0;
+	}
+
+	return EXIT_FAILURE;
+}
+
 pid_t session_pid = 0;
 /* Open Session.  Here we need to fork a little process so that we can
    give the credentials to the session itself so that it can startup the
@@ -330,40 +367,14 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		/* Locks to carry over */
-		mlock(buffer, buffer_len);
+		int retval = 0;
 
-		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
-				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
-			_exit(EXIT_FAILURE);
-		}
+		retval = session_socket_handler(buffer, buffer_len, pwdent, socketfd);
 
-		if (listen(socketfd, 1) < 0) {
-			_exit(EXIT_FAILURE);
-		}
-
-		socklen_t connected_addr_size;
-		int connectfd;
-		struct sockaddr_un connected_addr;
-
-		connected_addr_size = sizeof(struct sockaddr_un);
-		connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
-		if (connectfd < 0) {
-			_exit(EXIT_FAILURE);
-		}
-
-		int writedata;
-		writedata = write(connectfd, buffer, buffer_len);
-
-		close(connectfd);
 		close(socketfd);
 		free(buffer);
 
-		if (writedata == buffer_len) {
-			_exit(0);
-		} else {
-			_exit(EXIT_FAILURE);
-		}
+		_exit(retval);
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
 		close(socketfd);
