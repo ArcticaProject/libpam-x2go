@@ -252,31 +252,55 @@ done:
 static int
 session_socket_handler (struct passwd * pwdent, const char * ruser, const char * rhost, const char * rdomain, const char * password)
 {
+	/* Socket stuff */
+	int socketfd = 0;
+	struct sockaddr_un socket_addr;
+
+	/* Connected user */
+	socklen_t connected_addr_size;
+	int connectfd = 0;
+	struct sockaddr_un connected_addr;
+
+	/* Our buffer */
+	char * buffer = NULL;
+	int buffer_len = 0;
+
+	/* Track write out */
+	int writedata = 0;
+
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+		/* Don't need to clean up yet */
 		return EXIT_FAILURE;
 	}
 
 	/* Build this up as a buffer so we can just write it and see that
 	   very, very clearly */
-	int buffer_len = 0;
 	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
 	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
 	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
 	buffer_len += strlen(password) + 1; /* Add one for the NULL */
 
-	char * buffer = malloc(buffer_len);
+	if (buffer_len < 5) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	buffer = malloc(buffer_len);
+
+	if (buffer == NULL) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
 	/* Lock the buffer before writing */
 	mlock(buffer, buffer_len);
 	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
 
 	/* Make our socket and bind it */
-	int socketfd = 0;
-	struct sockaddr_un socket_addr;
-
 	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (socketfd < 0) {
-		return EXIT_FAILURE;
+		goto cleanup;
 	}
 
 	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
@@ -288,40 +312,45 @@ session_socket_handler (struct passwd * pwdent, const char * ruser, const char *
 	   there isn't a race condition to get to it.  Things will block
 	   otherwise. */
 	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
-		close(socketfd);
-		return EXIT_FAILURE;
+		goto cleanup;
 	}
 
 	/* Set the socket file permissions to be 600 and the user and group
 	   to be the guest user.  NOTE: This won't protect on BSD */
 	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
 			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
-		close(socketfd);
-		return EXIT_FAILURE;
+		goto cleanup;
 	}
 
 	if (listen(socketfd, 1) < 0) {
-		close(socketfd);
-		return EXIT_FAILURE;
+		goto cleanup;
 	}
-
-	socklen_t connected_addr_size;
-	int connectfd;
-	struct sockaddr_un connected_addr;
 
 	connected_addr_size = sizeof(struct sockaddr_un);
 	connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
 	if (connectfd < 0) {
-		close(socketfd);
-		return EXIT_FAILURE;
+		goto cleanup;
 	}
 
-	int writedata;
 	writedata = write(connectfd, buffer, buffer_len);
 
-	close(socketfd);
-	close(connectfd);
+cleanup:
+	if (socketfd != 0) {
+		close(socketfd);
+	}
+	if (connectfd != 0) {
+		close(connectfd);
+	}
 
+	if (buffer != NULL) {
+		memset(buffer, 0, buffer_len);
+		munlock(buffer, buffer_len);
+		free(buffer);
+		buffer = NULL;
+	}
+
+	/* This should be only true on the write, so we can use this to check
+	   out as writedata is init to 0 */
 	if (writedata == buffer_len) {
 		return 0;
 	}
