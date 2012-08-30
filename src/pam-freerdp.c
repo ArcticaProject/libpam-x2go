@@ -250,15 +250,28 @@ done:
 }
 
 static int
-session_socket_handler (const char * buffer, int buffer_len, struct passwd * pwdent)
+session_socket_handler (struct passwd * pwdent, const char * ruser, const char * rhost, const char * rdomain, const char * password)
 {
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 		return EXIT_FAILURE;
 	}
 
+	/* Build this up as a buffer so we can just write it and see that
+	   very, very clearly */
+	int buffer_len = 0;
+	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
+	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
+	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
+	buffer_len += strlen(password) + 1; /* Add one for the NULL */
+
+	char * buffer = malloc(buffer_len);
+	/* Lock the buffer before writing */
+	mlock(buffer, buffer_len);
+	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
+
 	/* Make our socket and bind it */
-	int socketfd;
+	int socketfd = 0;
 	struct sockaddr_un socket_addr;
 
 	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -348,32 +361,12 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 		retval = PAM_SYSTEM_ERR;
 		goto done;
 	}
-	
-	/* Build this up as a buffer so we can just write it and see that
-	   very, very clearly */
-	int buffer_len = 0;
-	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
-	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
-	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
-	buffer_len += strlen(password) + 1; /* Add one for the NULL */
-
-	char * buffer = malloc(buffer_len);
-	/* Lock the buffer before writing */
-	mlock(buffer, buffer_len);
-	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
 
 	pid_t pid = fork();
 	if (pid == 0) {
 		int retval = 0;
 
-		/* Locks to carry over */
-		mlock(buffer, buffer_len);
-
-		retval = session_socket_handler(buffer, buffer_len, pwdent);
-
-		munlock(buffer, buffer_len);
-		memset(buffer, 0, buffer_len);
-		free(buffer);
+		retval = session_socket_handler(pwdent, ruser, rhost, rdomain, password);
 
 		_exit(retval);
 	} else if (pid < 0) {
@@ -381,10 +374,6 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	} else {
 		session_pid = pid;
 	}
-
-	memset(buffer, 0, buffer_len);
-	munlock(buffer, buffer_len);
-	free(buffer);
 
 done:
     return retval;
