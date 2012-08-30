@@ -504,12 +504,60 @@ done:
 PAM_EXTERN int
 pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	if (session_pid != 0) {
-		kill(session_pid, SIGKILL);
-		session_pid = 0;
+	if (session_pid == 0) {
+		return PAM_IGNORE;
 	}
 
-	return PAM_IGNORE;
+	char * username = NULL;
+	int retval = PAM_SUCCESS;
+
+	GET_ITEM(username, PAM_USER);
+
+	struct passwd * pwdent = getpwnam(username);
+	if (pwdent == NULL) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
+	pid_t pid = fork();
+	if (pid == 0) {
+		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (setgroups(1, &pwdent->pw_gid) != 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (clearenv() != 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		int killval = kill(session_pid, SIGKILL);
+		session_pid = 0;
+
+		if (killval != 0) {
+			printf("Unable to kill\n");
+		}
+
+		/* NOTE: We're ignoring whether we could kill it or not.  It'd be nice to
+		   track that but there are a lot of reason that we could fail there and
+		   it's not a bad thing.  Really we're attempting a best effort to clean up
+		   we won't be able to gaurantee it. */
+		_exit(EXIT_SUCCESS);	
+	} else if (pid < 0) {
+		retval = PAM_SYSTEM_ERR;
+	} else {
+		int forkret = 0;
+
+		if (waitpid(pid, &forkret, 0) < 0) {
+			retval = PAM_SYSTEM_ERR;
+		}
+	}
+
+done:
+	return retval;
 }
 
 /* LightDM likes to have this function around, but we don't need it as we
