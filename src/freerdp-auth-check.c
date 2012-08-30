@@ -60,6 +60,10 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
+	if (mlock(password, sizeof(password)) != 0) {
+		return -1;
+	}
+
 	freerdp_channels_global_init();
 
 	freerdp * instance = freerdp_new();
@@ -88,10 +92,14 @@ main (int argc, char * argv[])
 		instance->settings->port = strtoul(colonloc, NULL, 10);
 	}
 
+	int retval = -1;
 	if (freerdp_connect(instance)) {
 		freerdp_disconnect(instance);
-		return 0;
-	} else {
-		return -1;
+		retval = 0;
 	}
+
+	memset(password, 0, sizeof(password));
+	munlock(password, sizeof(password));
+
+	return retval;
 }
