@@ -150,8 +150,13 @@ get_item (pam_handle_t * pamh, int type)
 				free(global_password);
 			}
 			global_password = strdup(promptval);
-			mlock(global_password, strlen(global_password));
-			retval = global_password;
+			if (mlock(global_password, strlen(global_password)) != 0) {
+				/* Woah, can't lock it.  Can't keep it. */
+				free(global_password);
+				global_password = NULL;
+			} else {
+				retval = global_password;
+			}
 		}
 
 		free(promptval);
