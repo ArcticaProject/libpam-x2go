@@ -239,10 +239,6 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 			_exit(EXIT_FAILURE);
 		}
 
-		if (setgroups(1, &pwdent->pw_gid) != 0) {
-			_exit(EXIT_FAILURE);
-		}
-
 		if (clearenv() != 0) {
 			_exit(EXIT_FAILURE);
 		}
@@ -310,11 +306,6 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
-		/* Don't need to clean up yet */
-		return EXIT_FAILURE;
-	}
-
-	if (setgroups(1, &pwdent->pw_gid) != 0) {
 		/* Don't need to clean up yet */
 		return EXIT_FAILURE;
 	}
@@ -523,10 +514,6 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 	if (pid == 0) {
 		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
-			_exit(EXIT_FAILURE);
-		}
-
-		if (setgroups(1, &pwdent->pw_gid) != 0) {
 			_exit(EXIT_FAILURE);
 		}
 
