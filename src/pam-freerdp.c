@@ -264,6 +264,7 @@ session_socket_handler (struct passwd * pwdent, const char * ruser, const char *
 	/* Our buffer */
 	char * buffer = NULL;
 	int buffer_len = 0;
+	int buffer_fill = 0;
 
 	/* Track write out */
 	int writedata = 0;
@@ -294,8 +295,18 @@ session_socket_handler (struct passwd * pwdent, const char * ruser, const char *
 	}
 
 	/* Lock the buffer before writing */
-	mlock(buffer, buffer_len);
-	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
+	if (mlock(buffer, buffer_len) != 0) {
+		/* We can't lock, we go home */
+		goto cleanup;
+	}
+
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
+	if (buffer_fill > buffer_len) {
+		/* This really shouldn't happen, but if for some reason we have an
+		   difference between they way that the lengths are calculated we want
+		   to catch that. */
+		goto cleanup;
+	}
 
 	/* Make our socket and bind it */
 	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
