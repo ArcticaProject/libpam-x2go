@@ -110,6 +110,18 @@ get_item (pam_handle_t * pamh, int type)
 	char * promptval = responses->resp;
 	free(responses);
 
+	/* If we didn't get anything, just move on */
+	if (promptval == NULL) {
+		return NULL;
+	}
+
+	if (type == PAM_AUTHTOK) {
+		if (mlock(promptval, strlen(promptval) + 1) != 0) {
+			free(promptval);
+			return NULL;
+		}
+	}
+
 	if (type == PAM_RHOST) {
 		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
@@ -146,17 +158,22 @@ get_item (pam_handle_t * pamh, int type)
 			/* We also save the password globally if we've got one */
 			if (global_password != NULL) {
 				memset(global_password, 0, strlen(global_password));
-				munlock(global_password, strlen(global_password));
+				munlock(global_password, strlen(global_password) + 1);
 				free(global_password);
 			}
 			global_password = strdup(promptval);
-			if (mlock(global_password, strlen(global_password)) != 0) {
+			if (mlock(global_password, strlen(global_password) + 1) != 0) {
 				/* Woah, can't lock it.  Can't keep it. */
 				free(global_password);
 				global_password = NULL;
 			} else {
 				retval = global_password;
 			}
+		}
+
+		if (type == PAM_AUTHTOK) {
+			memset(promptval, 0, strlen(promptval) + 1);
+			munlock(promptval, strlen(promptval) + 1);
 		}
 
 		free(promptval);
