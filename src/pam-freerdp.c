@@ -247,6 +247,10 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 			_exit(EXIT_FAILURE);
 		}
 
+		if (chdir(pwdent->pw_dir) != 0) {
+			_exit(EXIT_FAILURE);
+		}
+
 		setenv("HOME", pwdent->pw_dir, 1);
 
 		execvp(args[0], args);
@@ -316,6 +320,11 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 	}
 
 	if (clearenv() != 0) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	if (chdir(pwdent->pw_dir) != 0) {
 		/* Don't need to clean up yet */
 		return EXIT_FAILURE;
 	}
