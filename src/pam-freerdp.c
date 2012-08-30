@@ -33,6 +33,7 @@
 #include <security/pam_appl.h>
 
 #define PAM_TYPE_DOMAIN  1234
+#define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
 static char * global_domain = NULL;
 /* FIXME? This is a work around to the fact that PAM seems to be clearing
@@ -269,6 +270,9 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 	/* Track write out */
 	int writedata = 0;
 
+	/* Track ready writing */
+	int readywrite = 0;
+
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 		/* Don't need to clean up yet */
@@ -334,6 +338,11 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 	}
 
 	if (listen(socketfd, 1) < 0) {
+		goto cleanup;
+	}
+
+	readywrite = write(readypipe, ALL_GOOD_SIGNAL, strlen(ALL_GOOD_SIGNAL) + 1);
+	if (readywrite != strlen(ALL_GOOD_SIGNAL) + 1) {
 		goto cleanup;
 	}
 
@@ -422,8 +431,18 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 
 		retval = PAM_SYSTEM_ERR;
 	} else {
+		char readbuffer[strlen(ALL_GOOD_SIGNAL) + 1];
+		int readlen = 0;
+
+		readlen = read(sessionready[0], readbuffer, strlen(ALL_GOOD_SIGNAL) + 1);
+
 		close(sessionready[0]);
-		session_pid = pid;
+
+		if (readlen == strlen(ALL_GOOD_SIGNAL) + 1) {
+			session_pid = pid;
+		} else {
+			retval = PAM_SYSTEM_ERR;
+		}
 	}
 
 done:
