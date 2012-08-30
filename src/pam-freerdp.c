@@ -250,7 +250,7 @@ done:
 }
 
 static int
-session_socket_handler (struct passwd * pwdent, const char * ruser, const char * rhost, const char * rdomain, const char * password)
+session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rdomain, const char * password)
 {
 	/* Socket stuff */
 	int socketfd = 0;
@@ -402,16 +402,27 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 		goto done;
 	}
 
+	int sessionready[2];
+	if (pipe(sessionready) != 0) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
 	pid_t pid = fork();
 	if (pid == 0) {
 		int retval = 0;
 
-		retval = session_socket_handler(pwdent, ruser, rhost, rdomain, password);
+		retval = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rdomain, password);
 
+		close(sessionready[1]);
 		_exit(retval);
 	} else if (pid < 0) {
+		close(sessionready[0]);
+		close(sessionready[1]);
+
 		retval = PAM_SYSTEM_ERR;
 	} else {
+		close(sessionready[0]);
 		session_pid = pid;
 	}
 
