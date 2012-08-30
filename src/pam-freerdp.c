@@ -556,6 +556,10 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 		}
 	}
 
+	/* We reset this no matter.  If we error'd trying to do it, we don't
+	   want to try again.  We'll just return the error for this time. */
+	session_pid = 0;
+
 done:
 	return retval;
 }
