@@ -27,12 +27,15 @@
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <pwd.h>
+#include <grp.h>
+#include <errno.h>
 
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
 
 #define PAM_TYPE_DOMAIN  1234
+#define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
 static char * global_domain = NULL;
 /* FIXME? This is a work around to the fact that PAM seems to be clearing
@@ -109,6 +112,18 @@ get_item (pam_handle_t * pamh, int type)
 	char * promptval = responses->resp;
 	free(responses);
 
+	/* If we didn't get anything, just move on */
+	if (promptval == NULL) {
+		return NULL;
+	}
+
+	if (type == PAM_AUTHTOK) {
+		if (mlock(promptval, strlen(promptval) + 1) != 0) {
+			free(promptval);
+			return NULL;
+		}
+	}
+
 	if (type == PAM_RHOST) {
 		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
@@ -145,12 +160,22 @@ get_item (pam_handle_t * pamh, int type)
 			/* We also save the password globally if we've got one */
 			if (global_password != NULL) {
 				memset(global_password, 0, strlen(global_password));
-				munlock(global_password, strlen(global_password));
+				munlock(global_password, strlen(global_password) + 1);
 				free(global_password);
 			}
 			global_password = strdup(promptval);
-			mlock(global_password, strlen(global_password));
-			retval = global_password;
+			if (mlock(global_password, strlen(global_password) + 1) != 0) {
+				/* Woah, can't lock it.  Can't keep it. */
+				free(global_password);
+				global_password = NULL;
+			} else {
+				retval = global_password;
+			}
+		}
+
+		if (type == PAM_AUTHTOK) {
+			memset(promptval, 0, strlen(promptval) + 1);
+			munlock(promptval, strlen(promptval) + 1);
 		}
 
 		free(promptval);
@@ -210,8 +235,22 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 			_exit(EXIT_FAILURE);
 		}
 
+		/* Setting groups, but allowing EPERM as if we're not 100% root
+		   we might not be able to do this */
+		if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+			_exit(EXIT_FAILURE);
+		}
+
 		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (clearenv() != 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (chdir(pwdent->pw_dir) != 0) {
 			_exit(EXIT_FAILURE);
 		}
 
@@ -249,6 +288,150 @@ done:
 	return retval;
 }
 
+static int
+session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rdomain, const char * password)
+{
+	/* Socket stuff */
+	int socketfd = 0;
+	struct sockaddr_un socket_addr;
+
+	/* Connected user */
+	socklen_t connected_addr_size;
+	int connectfd = 0;
+	struct sockaddr_un connected_addr;
+
+	/* Our buffer */
+	char * buffer = NULL;
+	int buffer_len = 0;
+	int buffer_fill = 0;
+
+	/* Track write out */
+	int writedata = 0;
+
+	/* Track ready writing */
+	int readywrite = 0;
+
+	/* Setting groups, but allowing EPERM as if we're not 100% root
+	   we might not be able to do this */
+	if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+		_exit(EXIT_FAILURE);
+	}
+
+	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	if (clearenv() != 0) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	if (chdir(pwdent->pw_dir) != 0) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	/* Build this up as a buffer so we can just write it and see that
+	   very, very clearly */
+	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
+	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
+	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
+	buffer_len += strlen(password) + 1; /* Add one for the NULL */
+
+	if (buffer_len < 5) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	buffer = malloc(buffer_len);
+
+	if (buffer == NULL) {
+		/* Don't need to clean up yet */
+		return EXIT_FAILURE;
+	}
+
+	/* Lock the buffer before writing */
+	if (mlock(buffer, buffer_len) != 0) {
+		/* We can't lock, we go home */
+		goto cleanup;
+	}
+
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
+	if (buffer_fill > buffer_len) {
+		/* This really shouldn't happen, but if for some reason we have an
+		   difference between they way that the lengths are calculated we want
+		   to catch that. */
+		goto cleanup;
+	}
+
+	/* Make our socket and bind it */
+	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (socketfd < 0) {
+		goto cleanup;
+	}
+
+	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
+	socket_addr.sun_family = AF_UNIX;
+	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
+	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
+
+	/* We bind the socket before forking so that we ensure that
+	   there isn't a race condition to get to it.  Things will block
+	   otherwise. */
+	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
+		goto cleanup;
+	}
+
+	/* Set the socket file permissions to be 600 and the user and group
+	   to be the guest user.  NOTE: This won't protect on BSD */
+	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
+			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
+		goto cleanup;
+	}
+
+	if (listen(socketfd, 1) < 0) {
+		goto cleanup;
+	}
+
+	readywrite = write(readypipe, ALL_GOOD_SIGNAL, strlen(ALL_GOOD_SIGNAL) + 1);
+	if (readywrite != strlen(ALL_GOOD_SIGNAL) + 1) {
+		goto cleanup;
+	}
+
+	connected_addr_size = sizeof(struct sockaddr_un);
+	connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
+	if (connectfd < 0) {
+		goto cleanup;
+	}
+
+	writedata = write(connectfd, buffer, buffer_len);
+
+cleanup:
+	if (socketfd != 0) {
+		close(socketfd);
+	}
+	if (connectfd != 0) {
+		close(connectfd);
+	}
+
+	if (buffer != NULL) {
+		memset(buffer, 0, buffer_len);
+		munlock(buffer, buffer_len);
+		free(buffer);
+		buffer = NULL;
+	}
+
+	/* This should be only true on the write, so we can use this to check
+	   out as writedata is init to 0 */
+	if (writedata == buffer_len) {
+		return 0;
+	}
+
+	return EXIT_FAILURE;
+}
+
 pid_t session_pid = 0;
 /* Open Session.  Here we need to fork a little process so that we can
    give the credentials to the session itself so that it can startup the
@@ -281,99 +464,40 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 		retval = PAM_SYSTEM_ERR;
 		goto done;
 	}
-	
-	/* Make our socket and bind it */
-	int socketfd;
-	struct sockaddr_un socket_addr;
 
-	socketfd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (socketfd < 0) {
+	int sessionready[2];
+	if (pipe(sessionready) != 0) {
 		retval = PAM_SYSTEM_ERR;
 		goto done;
 	}
-
-	memset(&socket_addr, 0, sizeof(struct sockaddr_un));
-	socket_addr.sun_family = AF_UNIX;
-	strncpy(socket_addr.sun_path, pwdent->pw_dir, sizeof(socket_addr.sun_path) - 1);
-	strncpy(socket_addr.sun_path + strlen(pwdent->pw_dir), "/.freerdp-socket", (sizeof(socket_addr.sun_path) - strlen(pwdent->pw_dir)) - 1);
-
-	/* We bind the socket before forking so that we ensure that
-	   there isn't a race condition to get to it.  Things will block
-	   otherwise. */
-	if (bind(socketfd, (struct sockaddr *)&socket_addr, sizeof(struct sockaddr_un)) < 0) {
-		close(socketfd);
-		retval = PAM_SYSTEM_ERR;
-		goto done;
-	}
-
-	/* Set the socket file permissions to be 600 and the user and group
-	   to be the guest user.  NOTE: This won't protect on BSD */
-	if (chmod(socket_addr.sun_path, S_IRUSR | S_IWUSR) != 0 ||
-			chown(socket_addr.sun_path, pwdent->pw_uid, pwdent->pw_gid) != 0) {
-		close(socketfd);
-		retval = PAM_SYSTEM_ERR;
-		goto done;
-	}
-
-	/* Build this up as a buffer so we can just write it and see that
-	   very, very clearly */
-	int buffer_len = 0;
-	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
-	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
-	buffer_len += strlen(rdomain) + 1;  /* Add one for the space */
-	buffer_len += strlen(password) + 1; /* Add one for the NULL */
-
-	char * buffer = malloc(buffer_len);
-	/* Lock the buffer before writing */
-	mlock(buffer, buffer_len);
-	snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rdomain, rhost);
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		/* Locks to carry over */
-		mlock(buffer, buffer_len);
+		int retval = 0;
 
-		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
-				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
-			_exit(EXIT_FAILURE);
-		}
+		retval = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rdomain, password);
 
-		if (listen(socketfd, 1) < 0) {
-			_exit(EXIT_FAILURE);
-		}
-
-		socklen_t connected_addr_size;
-		int connectfd;
-		struct sockaddr_un connected_addr;
-
-		connected_addr_size = sizeof(struct sockaddr_un);
-		connectfd = accept(socketfd, (struct sockaddr *)&connected_addr, &connected_addr_size);
-		if (connectfd < 0) {
-			_exit(EXIT_FAILURE);
-		}
-
-		int writedata;
-		writedata = write(connectfd, buffer, buffer_len);
-
-		close(connectfd);
-		close(socketfd);
-		free(buffer);
-
-		if (writedata == buffer_len) {
-			_exit(0);
-		} else {
-			_exit(EXIT_FAILURE);
-		}
+		close(sessionready[1]);
+		_exit(retval);
 	} else if (pid < 0) {
-		retval = PAM_SYSTEM_ERR;
-		close(socketfd);
-	} else {
-		session_pid = pid;
-	}
+		close(sessionready[0]);
+		close(sessionready[1]);
 
-	memset(buffer, 0, buffer_len);
-	munlock(buffer, buffer_len);
-	free(buffer);
+		retval = PAM_SYSTEM_ERR;
+	} else {
+		char readbuffer[strlen(ALL_GOOD_SIGNAL) + 1];
+		int readlen = 0;
+
+		readlen = read(sessionready[0], readbuffer, strlen(ALL_GOOD_SIGNAL) + 1);
+
+		close(sessionready[0]);
+
+		if (readlen == strlen(ALL_GOOD_SIGNAL) + 1) {
+			session_pid = pid;
+		} else {
+			retval = PAM_SYSTEM_ERR;
+		}
+	}
 
 done:
     return retval;
@@ -384,12 +508,66 @@ done:
 PAM_EXTERN int
 pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	if (session_pid != 0) {
-		kill(session_pid, SIGKILL);
-		session_pid = 0;
+	if (session_pid == 0) {
+		return PAM_IGNORE;
 	}
 
-	return PAM_IGNORE;
+	char * username = NULL;
+	int retval = PAM_SUCCESS;
+
+	GET_ITEM(username, PAM_USER);
+
+	struct passwd * pwdent = getpwnam(username);
+	if (pwdent == NULL) {
+		retval = PAM_SYSTEM_ERR;
+		goto done;
+	}
+
+	pid_t pid = fork();
+	if (pid == 0) {
+		/* Setting groups, but allowing EPERM as if we're not 100% root
+		   we might not be able to do this */
+		if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
+				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		if (clearenv() != 0) {
+			_exit(EXIT_FAILURE);
+		}
+
+		int killval = kill(session_pid, SIGKILL);
+		session_pid = 0;
+
+		if (killval != 0) {
+			printf("Unable to kill\n");
+		}
+
+		/* NOTE: We're ignoring whether we could kill it or not.  It'd be nice to
+		   track that but there are a lot of reason that we could fail there and
+		   it's not a bad thing.  Really we're attempting a best effort to clean up
+		   we won't be able to gaurantee it. */
+		_exit(EXIT_SUCCESS);	
+	} else if (pid < 0) {
+		retval = PAM_SYSTEM_ERR;
+	} else {
+		int forkret = 0;
+
+		if (waitpid(pid, &forkret, 0) < 0) {
+			retval = PAM_SYSTEM_ERR;
+		}
+	}
+
+	/* We reset this no matter.  If we error'd trying to do it, we don't
+	   want to try again.  We'll just return the error for this time. */
+	session_pid = 0;
+
+done:
+	return retval;
 }
 
 /* LightDM likes to have this function around, but we don't need it as we
