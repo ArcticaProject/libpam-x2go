@@ -28,6 +28,7 @@
 #include <sys/un.h>
 #include <pwd.h>
 #include <grp.h>
+#include <errno.h>
 
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
@@ -234,6 +235,12 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 			_exit(EXIT_FAILURE);
 		}
 
+		/* Setting groups, but allowing EPERM as if we're not 100% root
+		   we might not be able to do this */
+		if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+			_exit(EXIT_FAILURE);
+		}
+
 		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 			_exit(EXIT_FAILURE);
@@ -303,6 +310,12 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 
 	/* Track ready writing */
 	int readywrite = 0;
+
+	/* Setting groups, but allowing EPERM as if we're not 100% root
+	   we might not be able to do this */
+	if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+		_exit(EXIT_FAILURE);
+	}
 
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
@@ -512,6 +525,12 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 
 	pid_t pid = fork();
 	if (pid == 0) {
+		/* Setting groups, but allowing EPERM as if we're not 100% root
+		   we might not be able to do this */
+		if (setgroups(1, &pwdent->pw_gid) != 0 && errno != EPERM) {
+			_exit(EXIT_FAILURE);
+		}
+
 		if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
 				setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 			_exit(EXIT_FAILURE);
