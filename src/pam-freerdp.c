@@ -37,6 +37,8 @@
 #define PAM_TYPE_DOMAIN  1234
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
+static int unpriveleged_kill (struct passwd * pwdent);
+
 static char * global_domain = NULL;
 /* FIXME? This is a work around to the fact that PAM seems to be clearing
    the auth token between authorize and open_session.  Which then requires
@@ -523,6 +525,20 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 		goto done;
 	}
 
+	retval = unpriveleged_kill(pwdent);
+
+done:
+	return retval;
+}
+
+/* Drop privs and try to kill the process with the PID of session_pid.  
+   This ensures that we don't kill something important if there is PID wrap
+   around.  */
+static int
+unpriveleged_kill (struct passwd * pwdent)
+{
+	int retval = PAM_SUCCESS;
+
 	pid_t pid = fork();
 	if (pid == 0) {
 		/* Setting groups, but allowing EPERM as if we're not 100% root
@@ -566,7 +582,6 @@ pam_sm_close_session (pam_handle_t *pamh, int flags, int argc, const char **argv
 	   want to try again.  We'll just return the error for this time. */
 	session_pid = 0;
 
-done:
 	return retval;
 }
 
