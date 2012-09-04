@@ -441,11 +441,6 @@ pid_t session_pid = 0;
 PAM_EXTERN int
 pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv)
 {
-	if (session_pid != 0) {
-		kill(session_pid, SIGKILL);
-		session_pid = 0;
-	}
-
 	char * username = NULL;
 	char * password = NULL;
 	char * ruser = NULL;
@@ -465,6 +460,10 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	if (pwdent == NULL) {
 		retval = PAM_SYSTEM_ERR;
 		goto done;
+	}
+
+	if (session_pid != 0) {
+		unpriveleged_kill(pwdent);
 	}
 
 	int sessionready[2];
