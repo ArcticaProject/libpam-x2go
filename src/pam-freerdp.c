@@ -335,6 +335,10 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		return EXIT_FAILURE;
 	}
 
+	if (rdomain[0] == '\0') {
+		rdomain = ".";
+	}
+
 	/* Build this up as a buffer so we can just write it and see that
 	   very, very clearly */
 	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
