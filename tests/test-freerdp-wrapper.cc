@@ -14,7 +14,7 @@ extern "C" {
 
 	int freerdpclient_wrapper (int argc, char * argv[]);
 
-const char * auth_check_path = "";
+const char * auth_check_path = AUTH_CHECK;
 
 }
 
