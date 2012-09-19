@@ -3,7 +3,7 @@ pamlibdir = $(PAMMODULEDIR)
 pamlib_LTLIBRARIES = pam_freerdp.la
 
 pam_freerdp_la_SOURCES = \
-	pam-freerdp.c
+	auth-check-path.c auth-check-path.h
 
 pam_freerdp_la_LDFLAGS = \
 	-no-undefined \
@@ -11,13 +11,23 @@ pam_freerdp_la_LDFLAGS = \
 	-avoid-version \
 	$(COVERAGE_LDFLAGS)
 
-pam_freerdp_la_LIBADD = \
-	-lpam
-
 pam_freerdp_la_CFLAGS = \
 	-Wall -Werror \
 	-DAUTH_CHECK="\"$(pkglibexecdir)/freerdp-auth-check\"" \
 	$(COVERAGE_CFLAGS)
+
+noinst_LTLIBRARIES = \
+	libfreerdpcore.la
+
+libfreerdpcore_la_SOURCES = \
+	pam-freerdp.c
+libfreerdpcore_la_CFLAGS = \
+	-Wall -Werror \
+	$(COVERAGE_CFLAGS)
+libfreerdpcore_la_LIBADD = \
+	-lpam
+libfreerdpcore_la_LDFLAGS = \
+	$(COVERAGE_LDFLAGS)
 
 pkglibexec_PROGRAMS = \
 	freerdp-auth-check

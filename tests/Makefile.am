@@ -43,7 +43,7 @@ test_freerdpclient_wrapper_SOURCES = \
 	test-freerdp-wrapper.cc
 
 test_freerdpclient_wrapper_LDADD = \
-	$(top_builddir)/src/pam_freerdp.la \
+	$(top_builddir)/src/libfreerdpcore.la \
 	libgtest.a
 
 test_freerdpclient_wrapper_CXXFLAGS = \

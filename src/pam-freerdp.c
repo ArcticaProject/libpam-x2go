@@ -34,6 +34,8 @@
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
 
+#include "auth-check-path.h"
+
 #define PAM_TYPE_DOMAIN  1234
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
@@ -226,7 +228,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 
 		char * args[5];
 
-		args[0] = AUTH_CHECK;
+		args[0] = (char *)auth_check_path;
 		args[1] = rhost;
 		args[2] = ruser;
 		args[3] = rdomain;

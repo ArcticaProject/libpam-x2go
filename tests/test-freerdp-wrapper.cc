@@ -13,6 +13,9 @@ extern "C" {
 #include "mock_guest.h"
 
 	int freerdpclient_wrapper (int argc, char * argv[]);
+
+const char * auth_check_path = "";
+
 }
 
 namespace {
