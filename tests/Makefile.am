@@ -3,9 +3,11 @@ DISTCLEANFILES =
 EXTRA_DIST =
 
 TESTS = \
-  test-freerdpclient-wrapper
+	test-freerdpclient-wrapper
 
-check_PROGRAMS = $(TESTS)
+check_PROGRAMS = \
+	test-freerdp-auth \
+	$(TESTS)
 
 AM_CPPFLAGS = $(GTEST_CPPFLAGS) \
 	$(REMOTE_APPS_MANAGER_CFLAGS) \
@@ -37,6 +39,8 @@ libgtest_a_CXXFLAGS = \
 # Wrapper
 ##########################
 
+test_freerdp_wrapper: test-freerdp-auth
+
 test_freerdpclient_wrapper_SOURCES = \
 	mock_pam.c mock_pam.h \
 	mock_guest.c mock_guest.h \
@@ -52,4 +56,11 @@ test_freerdpclient_wrapper_CXXFLAGS = \
 
 test_freerdpclient_wrapper_LDFLAGS = \
 	-pthread
+
+##########################
+# Auth tool
+##########################
+
+test_freerdp_auth_SOURCES = \
+	test-freerdp-auth.c
 
