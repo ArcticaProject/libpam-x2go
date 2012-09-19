@@ -38,8 +38,8 @@ libgtest_a_CXXFLAGS = \
 ##########################
 
 test_freerdpclient_wrapper_SOURCES = \
-	mock_pam.c \
-	mock_guest.c \
+	mock_pam.c mock_pam.h \
+	mock_guest.c mock_guest.h \
 	test-freerdp-wrapper.cc
 
 test_freerdpclient_wrapper_LDADD = \
