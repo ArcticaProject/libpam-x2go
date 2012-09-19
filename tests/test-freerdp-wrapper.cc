@@ -62,6 +62,8 @@ namespace {
 
 	  EXPECT_EQ (PAM_SUCCESS, 
 				 pam_sm_open_session (pamh, 0, 0, argv));
+	  EXPECT_EQ (PAM_SUCCESS, 
+				 pam_sm_close_session (pamh, 0, 0, argv));
   }
 
 }
