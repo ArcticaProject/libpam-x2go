@@ -126,6 +126,18 @@ get_item (pam_handle_t * pamh, int type)
 		}
 	}
 
+	/* The way that xfreerdp does parsing means that we can't handle
+	   spaces in the username.  Let's block them as early as possible.
+	   Though, if the xfreerdp part gets fixed, we want this to disappear
+	     http://launchpad.net/bugs/1053102
+	*/
+	if (type == PAM_RUSER) {
+		if (strstr(promptval, " ") != NULL) {
+			free(promptval);
+			return NULL;
+		}
+	}
+
 	if (type == PAM_RHOST) {
 		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
