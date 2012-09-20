@@ -1,6 +1,7 @@
 
 SUBDIRS = \
-	src
+	src \
+	tests
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
 
@@ -30,3 +31,4 @@ dist-hook:
 				echo Failed to generate AUTHORS: not a branch >&2; \
 	fi
 
+include $(top_srcdir)/Makefile.am.coverage
