@@ -64,6 +64,8 @@ namespace {
 	  pam_handle_t *pamh = pam_handle_new ();
 
 	  EXPECT_EQ (PAM_SUCCESS, 
+				 pam_sm_authenticate (pamh, 0, 0, argv));
+	  EXPECT_EQ (PAM_SUCCESS, 
 				 pam_sm_open_session (pamh, 0, 0, argv));
 	  EXPECT_EQ (PAM_SUCCESS, 
 				 pam_sm_close_session (pamh, 0, 0, argv));
