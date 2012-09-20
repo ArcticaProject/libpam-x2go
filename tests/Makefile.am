@@ -52,7 +52,7 @@ test_freerdpclient_wrapper_LDADD = \
 
 test_freerdpclient_wrapper_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
-	-DAUTH_CHECK="\"$(builddir)/test-freerdp-auth\"" \
+	-DAUTH_CHECK="\"$(abs_builddir)/test-freerdp-auth\"" \
 	-I${top_srcdir}/src
 
 test_freerdpclient_wrapper_LDFLAGS = \
