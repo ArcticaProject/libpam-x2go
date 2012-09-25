@@ -16,6 +16,9 @@ pam_freerdp_la_CFLAGS = \
 	-DAUTH_CHECK="\"$(pkglibexecdir)/freerdp-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
+pam_freerdp_la_LIBADD = \
+	$(builddir)/libfreerdpcore.la
+
 noinst_LTLIBRARIES = \
 	libfreerdpcore.la
 
