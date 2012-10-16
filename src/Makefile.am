@@ -23,7 +23,8 @@ noinst_LTLIBRARIES = \
 	libfreerdpcore.la
 
 libfreerdpcore_la_SOURCES = \
-	pam-freerdp.c
+	pam-freerdp.c \
+	pam-freerdp-children.c
 libfreerdpcore_la_CFLAGS = \
 	-Wall -Werror \
 	$(COVERAGE_CFLAGS)

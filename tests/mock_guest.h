@@ -20,5 +20,7 @@ int setegid(gid_t gid);
 int seteuid(uid_t uid);
 int chmod(const char *path, mode_t mode);
 int chown(const char *path, uid_t owner, gid_t group);
+int execvp(const char *file, char *const argv[]);
+int socket_sucker();
 
 #endif
