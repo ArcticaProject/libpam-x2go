@@ -34,7 +34,7 @@
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
 
-#include "pam-freerdp-children.h"
+#include "pam-x2go-children.h"
 #include "auth-check-path.h"
 
 void
