@@ -59,13 +59,22 @@ main (int argc, char * argv[])
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
-		/* We've got a port to deal with */
+		/* We've got a port to deal with 
 		colonloc[0] = '\0';
 		colonloc++;
+		*/
 
-		long port = strtoul(colonloc, NULL, 10);
+		char *hostname = strtok( argv[1], ":" );
+		long port = strtoul(strtok( argv[1], ":" ));
+
+		// long port = strtoul(colonloc, NULL, 10);
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &hostname );
 		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, &port );
+		printf ("host: %s\n", hostname);
 		printf ("port: %li\n", port);
+	} else {
+		printf ("host: %s\n", argv[1]);
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &argv[1] );
 	}
 
 	printf ("4\n");
