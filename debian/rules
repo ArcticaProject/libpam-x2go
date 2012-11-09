@@ -1,7 +1,11 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with-autoreconf
+	dh $@
+
+override_dh_auto_configure:
+	aclocal && automake --add-missing
+	./configure $(shell dpkg-buildflags --export=configure)
 
 override_dh_install:
 	dh_install
