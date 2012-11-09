@@ -62,7 +62,7 @@ main (int argc, char * argv[])
 
 		long port = strtoul(colonloc, NULL, 10);
 		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, &port );
-		printf ("port: %i\n", port);
+		printf ("port: %li\n", port);
 	}
 
 	printf ("4\n");
