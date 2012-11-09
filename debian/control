@@ -8,6 +8,7 @@ Build-Depends:
  debhelper (>= 9),
  libgtest-dev,
  libpam0g-dev,
+ libssh-dev,
  pkg-config,
 Standards-Version: 3.9.3
 Homepage: http://wiki.x2go.org

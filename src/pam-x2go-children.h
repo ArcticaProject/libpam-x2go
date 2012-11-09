@@ -16,8 +16,8 @@
  * Author: Ted Gould <ted@canonical.com>
  */
 
-#ifndef _PAM_FREERDP_CHILDREN_H_
-#define _PAM_FREERDP_CHILDREN_H_
+#ifndef _PAM_X2GO_CHILDREN_H_
+#define _PAM_X2GO_CHILDREN_H_
 
 #define PAM_TYPE_DOMAIN  1234
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
@@ -27,4 +27,4 @@ pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rh
 
 int
 session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rdomain, const char * password);
-#endif //_PAM_FREERDP_CHILDREN_H_
+#endif //_PAM_X2GO_CHILDREN_H_

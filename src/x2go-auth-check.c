@@ -16,36 +16,8 @@
  * Author: Ted Gould <ted@canonical.com>
  */
 
-#include <freerdp/freerdp.h>
-#include <freerdp/channels/channels.h>
+#include <libssh/libssh.h>
 #include <string.h>
-
-void
-auth_context_new (freerdp * instance, rdpContext * context)
-{
-	context->channels = freerdp_channels_new();
-	return;
-}
-
-void
-auth_context_free (freerdp * instance, rdpContext * context)
-{
-	return;
-}
-
-boolean
-auth_pre_connect (freerdp * instance)
-{
-	freerdp_channels_pre_connect(instance->context->channels, instance);
-	return true;
-}
-
-boolean
-auth_post_connect (freerdp * instance)
-{
-	freerdp_channels_post_connect(instance->context->channels, instance);
-	return true;
-}
 
 int
 main (int argc, char * argv[])
@@ -64,23 +36,12 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
-	freerdp_channels_global_init();
+	auth_check_ssh_session = ssh_new();
 
-	freerdp * instance = freerdp_new();
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1]; );
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2]; );
 
-	instance->PreConnect = auth_pre_connect;
-	instance->PostConnect = auth_post_connect;
-
-	instance->context_size = sizeof(rdpContext);
-	instance->ContextNew = auth_context_new;
-	instance->ContextFree = auth_context_free;
-
-	freerdp_context_new(instance);
-
-	instance->settings->hostname = argv[1];
-	instance->settings->username = argv[2];
-	instance->settings->domain = argv[3];
-	instance->settings->password = password;
+	rc = ssh_connect (ssh_session);
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
@@ -88,12 +49,17 @@ main (int argc, char * argv[])
 		colonloc[0] = '\0';
 		colonloc++;
 
-		instance->settings->port = strtoul(colonloc, NULL, 10);
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, strtoul(colonloc, NULL, 10); );
+	}
+
+	if (ssh_connect (ssh_session)) {
+		int rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
+		ssh_disconnect(ssh_session);
 	}
 
 	int retval = -1;
-	if (freerdp_connect(instance)) {
-		freerdp_disconnect(instance);
+	if ( rc == SSH_AUTH_SUCCESS )
+	{
 		retval = 0;
 	}
 

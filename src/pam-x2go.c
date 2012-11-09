@@ -34,7 +34,7 @@
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
 
-#include "pam-freerdp-children.h"
+#include "pam-x2go-children.h"
 #include "auth-check-path.h"
 
 static int unpriveleged_kill (struct passwd * pwdent);
@@ -126,18 +126,6 @@ get_item (pam_handle_t * pamh, int type)
 		}
 	}
 
-	/* The way that xfreerdp does parsing means that we can't handle
-	   spaces in the username.  Let's block them as early as possible.
-	   Though, if the xfreerdp part gets fixed, we want this to disappear
-	     http://launchpad.net/bugs/1053102
-	*/
-	if (type == PAM_RUSER) {
-		if (strstr(promptval, " ") != NULL) {
-			free(promptval);
-			return NULL;
-		}
-	}
-
 	if (type == PAM_RHOST) {
 		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
@@ -205,7 +193,7 @@ get_item (pam_handle_t * pamh, int type)
 	}
 
 /* Authenticate.  We need to make sure we have a user account, that
-   there are remote accounts and then verify them with FreeRDP */
+   there are remote accounts and then verify them with X2Go */
 PAM_EXTERN int
 pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
@@ -270,7 +258,7 @@ done:
 pid_t session_pid = 0;
 /* Open Session.  Here we need to fork a little process so that we can
    give the credentials to the session itself so that it can startup the
-   xfreerdp viewer for the login */
+   PyHoca (X2Go) client for the login */
 PAM_EXTERN int
 pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv)
 {
@@ -426,8 +414,8 @@ pam_sm_setcred (pam_handle_t *pamh, int flags, int argc, const char ** argv)
 
 #ifdef PAM_STATIC
 
-struct pam_module _pam_freerdp_modstruct = {
-     "pam_freerdp",
+struct pam_module _pam_x2go_modstruct = {
+     "pam_x2go",
      pam_sm_authenticate,
      pam_sm_setcred,
      NULL,
