@@ -3,7 +3,7 @@ DISTCLEANFILES =
 EXTRA_DIST =
 
 TESTS = \
-	test-pyhoca-wrapper
+	test-x2go-wrapper
 
 check_PROGRAMS = \
 	test-x2go-auth \
@@ -47,7 +47,7 @@ test_pyhoca_wrapper_SOURCES = \
 	test-x2go-wrapper.cc
 
 test_pyhoca_wrapper_LDADD = \
-	$(top_builddir)/src/libx2gocore.la \
+	$(top_builddir)/src/libssh.la \
 	libgtest.a
 
 test_pyhoca_wrapper_CXXFLAGS = \
