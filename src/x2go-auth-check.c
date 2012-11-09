@@ -36,12 +36,12 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
-	auth_check_ssh_session = ssh_new();
+	ssh_session auth_check_ssh_session = ssh_new();
 
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1] );
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2] );
 
-	int rc = ssh_connect (ssh_session);
+	ssh_connect ( auth_check_ssh_session );
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
@@ -52,10 +52,12 @@ main (int argc, char * argv[])
 		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, strtoul(colonloc, NULL, 10) );
 	}
 
-	if (ssh_connect (ssh_session)) {
-		int rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
-		ssh_disconnect(ssh_session);
+	int rc = -1;
+	if (ssh_connect (auth_check_ssh_session)) {
+		rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
+		ssh_disconnect(auth_check_ssh_session);
 	}
+	ssh_free(auth_check_ssh_session);
 
 	int retval = -1;
 	if ( rc == SSH_AUTH_SUCCESS )
