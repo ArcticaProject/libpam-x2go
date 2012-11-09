@@ -22,7 +22,7 @@ if test "x$have_pam" = "xno"; then
 fi
 
 ###########################
-# X2Go
+# LIBSSH
 ###########################
 
 PKG_CHECK_MODULES(LIBSSH, libssh)
