@@ -18,6 +18,10 @@
 
 #include <libssh/libssh.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+
 
 int
 main (int argc, char * argv[])
@@ -28,18 +32,27 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
+	printf ("1\n");
+
 	if (scanf("%511s", password) != 1) {
 		return -1;
 	}
+
+	printf ("2\n");
 
 	if (mlock(password, sizeof(password)) != 0) {
 		return -1;
 	}
 
+	printf ("3\n");
+
 	ssh_session auth_check_ssh_session = ssh_new();
 
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1] );
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2] );
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &argv[1] );
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, &argv[2] );
+
+	printf ("host: %s\n", argv[1]);
+	printf ("user: %s\n", argv[2]);
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
@@ -47,8 +60,12 @@ main (int argc, char * argv[])
 		colonloc[0] = '\0';
 		colonloc++;
 
-		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, strtoul(colonloc, NULL, 10) );
+		long port = strtoul(colonloc, NULL, 10);
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, &port );
+		printf ("port: %i\n", port);
 	}
+
+	printf ("4\n");
 
 	int rc = -1;
 	if (ssh_connect (auth_check_ssh_session)) {
@@ -56,6 +73,8 @@ main (int argc, char * argv[])
 		ssh_disconnect(auth_check_ssh_session);
 	}
 	ssh_free(auth_check_ssh_session);
+
+	printf ("5\n");
 
 	int retval = -1;
 	if ( rc == SSH_AUTH_SUCCESS )
