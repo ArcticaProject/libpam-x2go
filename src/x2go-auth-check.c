@@ -26,7 +26,7 @@
 int
 main (int argc, char * argv[])
 {
-	int verbosity = SSH_LOG_PROTOCOL;
+	int verbosity = SSH_LOG_NOLOG;
 
 	char password[512];
 	if (argc != 4) {
@@ -34,61 +34,44 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
-	printf ("1\n");
-
 	if (scanf("%511s", password) != 1) {
 		return -1;
 	}
-
-	printf ("2\n");
 
 	if (mlock(password, sizeof(password)) != 0) {
 		return -1;
 	}
 
-	printf ("3\n");
-
 	ssh_session auth_check_ssh_session = ssh_new();
 
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_LOG_VERBOSITY, &verbosity );
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &argv[1] );
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, &argv[2] );
-
-	printf ("host: %s\n", argv[1]);
-	printf ("user: %s\n", argv[2]);
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2] );
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
-		/* We've got a port to deal with 
+		/* We've got a port to deal with */
 		colonloc[0] = '\0';
 		colonloc++;
-		*/
+		long port = strtoul(colonloc, NULL, 10);
 
-		char *hostname = strtok( argv[1], ":" );
-		long port = strtoul(strtok( argv[1], ":" ));
+		char *array[2];
+		array[0] = strtok( argv[1], ":" );
+		char *hostname = array[0];
 
-		// long port = strtoul(colonloc, NULL, 10);
-		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &hostname );
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, hostname );
+
 		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, &port );
-		printf ("host: %s\n", hostname);
-		printf ("port: %li\n", port);
 	} else {
-		printf ("host: %s\n", argv[1]);
-		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, &argv[1] );
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1] );
 	}
-
-	printf ("4\n");
 
 	int rc;
 	rc = ssh_connect ( auth_check_ssh_session );
-	printf ("%i\n", rc);
 	if ( rc != SSH_OK ) {
 		fprintf ( stderr, "Error connecting to via SSH: %s\n", ssh_get_error ( auth_check_ssh_session ) );
 		ssh_free(auth_check_ssh_session);
 		return -1;
 	}
-
-	printf ("5\n");
 
 	rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
 	if ( rc != SSH_AUTH_SUCCESS ) {
@@ -97,8 +80,6 @@ main (int argc, char * argv[])
 		ssh_free(auth_check_ssh_session);
 		return -1;
 	}
-
-	printf ("6\n");
 
 	memset(password, 0, sizeof(password));
 	munlock(password, sizeof(password));
