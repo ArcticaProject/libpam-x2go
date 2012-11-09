@@ -71,9 +71,10 @@ main (int argc, char * argv[])
 	printf ("4\n");
 
 	int rc;
-	rc = ssh_connect (auth_check_ssh_session);
+	rc = ssh_connect ( auth_check_ssh_session );
 	printf ("%i\n", rc);
 	if ( rc != SSH_OK ) {
+		fprintf ( stderr, "Error connecting to via SSH: %s\n", ssh_get_error ( auth_check_ssh_session ) );
 		ssh_free(auth_check_ssh_session);
 		return -1;
 	}
@@ -82,6 +83,7 @@ main (int argc, char * argv[])
 
 	rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
 	if ( rc != SSH_AUTH_SUCCESS ) {
+		fprintf ( stderr, "Error connecting to via SSH: %s\n", ssh_get_error ( auth_check_ssh_session ) );
 		ssh_disconnect(auth_check_ssh_session);
 		ssh_free(auth_check_ssh_session);
 		return -1;
