@@ -1,2 +1,2 @@
 version=3
-http://launchpad.net/libpam-freerdp/+download .*/libpam-freerdp-(.+)\.tar\.gz
+http://code.x2go.org/releases/source/libpam-x2go/libpam-x2go-(.+)\.tar\.gz
