@@ -10,9 +10,7 @@ Build-Depends:
  libpam0g-dev,
  libssh-dev,
  pkg-config,
- automake,
- autotools-dev,
- libtool,
+ cdbs,
 Standards-Version: 3.9.3
 Homepage: http://wiki.x2go.org
 Vcs-Git: git://code.x2go.org/libpam-x2go.git
