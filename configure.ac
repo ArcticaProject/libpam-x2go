@@ -25,7 +25,7 @@ fi
 # X2Go
 ###########################
 
-PKG_CHECK_MODULES(X2GO, x2go)
+PKG_CHECK_MODULES(LIBSSH, libssh)
 
 ###########################
 # Local Install

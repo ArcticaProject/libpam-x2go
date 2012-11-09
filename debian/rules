@@ -1,13 +1,4 @@
 #!/usr/bin/make -f
 
-%:
-	dh $@
-
-override_dh_auto_configure:
-	aclocal && automake --add-missing
-	./configure $(shell dpkg-buildflags --export=configure)
-
-override_dh_install:
-	dh_install
-	find debian/libpam-x2go -name '*.a' -delete
-	find debian/libpam-x2go -name '*.la' -delete
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
