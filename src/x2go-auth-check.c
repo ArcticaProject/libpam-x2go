@@ -68,7 +68,7 @@ main (int argc, char * argv[])
 	printf ("4\n");
 
 	int rc;
-	rc = ssh_connect (auth_check_ssh_session)
+	rc = ssh_connect (auth_check_ssh_session);
 	if ( rc != SSH_OK ) {
 		ssh_free(auth_check_ssh_session);
 		return -1;
