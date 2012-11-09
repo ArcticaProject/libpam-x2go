@@ -15,7 +15,7 @@ pam_x2go_la_CFLAGS = \
 	-DAUTH_CHECK="\"$(pkglibexecdir)/x2go-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
-pkglibexec_PROGRAMS = \
+libexec_PROGRAMS = \
 	x2go-auth-check
 
 x2go_auth_check_SOURCES = \
