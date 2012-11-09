@@ -38,8 +38,8 @@ main (int argc, char * argv[])
 
 	auth_check_ssh_session = ssh_new();
 
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1]; );
-	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2]; );
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1] );
+	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2] );
 
 	int rc = ssh_connect (ssh_session);
 
@@ -49,7 +49,7 @@ main (int argc, char * argv[])
 		colonloc[0] = '\0';
 		colonloc++;
 
-		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, strtoul(colonloc, NULL, 10); );
+		ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_PORT, strtoul(colonloc, NULL, 10) );
 	}
 
 	if (ssh_connect (ssh_session)) {
