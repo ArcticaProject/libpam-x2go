@@ -74,6 +74,8 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
+	printf ("5\n");
+
 	rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
 	if ( rc != SSH_AUTH_SUCCESS ) {
 		ssh_disconnect(auth_check_ssh_session);
@@ -81,7 +83,7 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
-	printf ("5\n");
+	printf ("6\n");
 
 	memset(password, 0, sizeof(password));
 	munlock(password, sizeof(password));
