@@ -1,4 +1,3 @@
-
 pamlibdir = $(PAMMODULEDIR)
 pamlib_LTLIBRARIES = pam_x2go.la
 
@@ -17,10 +16,10 @@ pam_x2go_la_CFLAGS = \
 	$(COVERAGE_CFLAGS)
 
 pam_x2go_la_LIBADD = \
-	$(builddir)/libx2gocore.la
+	$(builddir)/libssh.a
 
 noinst_LTLIBRARIES = \
-	libx2gocore.la
+	libssh.a
 
 libx2gocore_la_SOURCES = \
 	pam-x2go.c \
