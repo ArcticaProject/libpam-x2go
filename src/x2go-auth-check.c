@@ -41,8 +41,6 @@ main (int argc, char * argv[])
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1] );
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2] );
 
-	ssh_connect ( auth_check_ssh_session );
-
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
 		/* We've got a port to deal with */
