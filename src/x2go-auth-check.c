@@ -67,23 +67,24 @@ main (int argc, char * argv[])
 
 	printf ("4\n");
 
-	int rc = -1;
-	if (ssh_connect (auth_check_ssh_session)) {
-		rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
-		ssh_disconnect(auth_check_ssh_session);
+	int rc;
+	rc = ssh_connect (auth_check_ssh_session)
+	if ( rc != SSH_OK ) {
+		ssh_free(auth_check_ssh_session);
+		return -1;
 	}
-	ssh_free(auth_check_ssh_session);
+
+	rc = ssh_userauth_password ( auth_check_ssh_session, NULL, password );
+	if ( rc != SSH_AUTH_SUCCESS ) {
+		ssh_disconnect(auth_check_ssh_session);
+		ssh_free(auth_check_ssh_session);
+		return -1
+	}
 
 	printf ("5\n");
-
-	int retval = -1;
-	if ( rc == SSH_AUTH_SUCCESS )
-	{
-		retval = 0;
-	}
 
 	memset(password, 0, sizeof(password));
 	munlock(password, sizeof(password));
 
-	return retval;
+	return 0;
 }
