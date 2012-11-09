@@ -12,7 +12,7 @@ pam_x2go_la_LDFLAGS = \
 
 pam_x2go_la_CFLAGS = \
 	-Wall -Werror \
-	-DAUTH_CHECK="\"$(pkglibexecdir)/x2go-auth-check\"" \
+	-DAUTH_CHECK="\"$(libexecdir)/x2go-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
 libexec_PROGRAMS = \
