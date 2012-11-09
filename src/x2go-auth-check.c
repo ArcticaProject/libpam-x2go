@@ -41,7 +41,7 @@ main (int argc, char * argv[])
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_HOST, argv[1]; );
 	ssh_options_set ( auth_check_ssh_session, SSH_OPTIONS_USER, argv[2]; );
 
-	rc = ssh_connect (ssh_session);
+	int rc = ssh_connect (ssh_session);
 
 	char * colonloc = strstr(argv[1], ":");
 	if (colonloc != NULL) {
