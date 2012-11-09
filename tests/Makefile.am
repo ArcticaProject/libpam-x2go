@@ -3,10 +3,10 @@ DISTCLEANFILES =
 EXTRA_DIST =
 
 TESTS = \
-	test-freerdpclient-wrapper
+	test-pyhoca-wrapper
 
 check_PROGRAMS = \
-	test-freerdp-auth \
+	test-x2go-auth \
 	$(TESTS)
 
 AM_CPPFLAGS = $(GTEST_CPPFLAGS) \
@@ -39,29 +39,29 @@ libgtest_a_CXXFLAGS = \
 # Wrapper
 ##########################
 
-test_freerdp_wrapper: test-freerdp-auth
+test_x2go_wrapper: test-x2go-auth
 
-test_freerdpclient_wrapper_SOURCES = \
+test_pyhoca_wrapper_SOURCES = \
 	mock_pam.c mock_pam.h \
 	mock_guest.c mock_guest.h \
-	test-freerdp-wrapper.cc
+	test-x2go-wrapper.cc
 
-test_freerdpclient_wrapper_LDADD = \
-	$(top_builddir)/src/libfreerdpcore.la \
+test_pyhoca_wrapper_LDADD = \
+	$(top_builddir)/src/libx2gocore.la \
 	libgtest.a
 
-test_freerdpclient_wrapper_CXXFLAGS = \
+test_pyhoca_wrapper_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
-	-DAUTH_CHECK="\"$(abs_builddir)/test-freerdp-auth\"" \
+	-DAUTH_CHECK="\"$(abs_builddir)/test-x2go-auth\"" \
 	-I${top_srcdir}/src
 
-test_freerdpclient_wrapper_LDFLAGS = \
+test_pyhoca_wrapper_LDFLAGS = \
 	-pthread
 
 ##########################
 # Auth tool
 ##########################
 
-test_freerdp_auth_SOURCES = \
-	test-freerdp-auth.c
+test_x2go_auth_SOURCES = \
+	test-x2go-auth.c
 

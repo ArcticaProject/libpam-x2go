@@ -1,4 +1,4 @@
-AC_INIT([libpam-freerdp], [1.0.1])
+AC_INIT([libpam-x2go], [1.0.1])
 AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE([1.11 -Wno-portability])
@@ -22,10 +22,10 @@ if test "x$have_pam" = "xno"; then
 fi
 
 ###########################
-# FreeRDP
+# X2Go
 ###########################
 
-PKG_CHECK_MODULES(FREERDP, freerdp)
+PKG_CHECK_MODULES(X2GO, x2go)
 
 ###########################
 # Local Install

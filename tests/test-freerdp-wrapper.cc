@@ -12,7 +12,7 @@ extern "C" {
 #include "mock_pam.h"
 #include "mock_guest.h"
 
-	int freerdpclient_wrapper (int argc, char * argv[]);
+	int x2goclient_wrapper (int argc, char * argv[]);
 
 const char * auth_check_path = AUTH_CHECK;
 
@@ -21,17 +21,17 @@ const char * auth_check_path = AUTH_CHECK;
 namespace {
 
   // The fixture for testing class Foo.
-  class FreerdpclientWrapperTest : public ::testing::Test {
+  class PyhocaWrapperTest : public ::testing::Test {
   protected:
     // You can remove any or all of the following functions if its body
     // is empty.
 
-    FreerdpclientWrapperTest() {
+    PyhocaWrapperTest() {
       // You can do set-up work for each test here.
 		setenv("HOME", "/tmp", 1 /* overwrite */);
     }
 
-    virtual ~FreerdpclientWrapperTest() {
+    virtual ~PyhocaWrapperTest() {
       // You can do clean-up work that doesn't throw exceptions here.
     }
 
@@ -41,24 +41,24 @@ namespace {
     virtual void SetUp() {
       // Code here will be called immediately after the constructor (right
       // before each test).
-		unlink("/tmp/.freerdp-socket");
+		unlink("/tmp/.x2go-socket");
     }
 
     virtual void TearDown() {
       // Code here will be called immediately after each test (right
       // before the destructor).
-		unlink("/tmp/.freerdp-socket");
+		unlink("/tmp/.x2go-socket");
     }
 
     // Objects declared here can be used by all tests in the test case for Foo.
   };
 
-  TEST_F(FreerdpclientWrapperTest, canLinkTheWholeGang) {
+  TEST_F(PyhocaWrapperTest, canLinkTheWholeGang) {
 	  EXPECT_EQ (1, 1); // right, that's trivial, but that means
 	                    // that I got all of the wrapper and pam to link there
   }
 
-  TEST_F(FreerdpclientWrapperTest, canCallPamOpenSession) {
+  TEST_F(PyhocaWrapperTest, canCallPamOpenSession) {
 	  const char *argv[] = { NULL };
 
 	  pam_handle_t *pamh = pam_handle_new ();

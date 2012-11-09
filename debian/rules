@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install
+	find debian/libpam-x2go -name '*.a' -delete
+	find debian/libpam-x2go -name '*.la' -delete

@@ -1,0 +1,25 @@
+Source: libpam-x2go
+Section: misc
+Priority: extra
+Maintainer: X2Go Developers <x2go-dev@lists.berlios.de>
+Uploaders:
+ Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+Build-Depends:
+ debhelper (>= 9),
+ libgtest-dev,
+ libpam0g-dev,
+ pkg-config,
+Standards-Version: 3.9.3
+Homepage: http://wiki.x2go.org
+Vcs-Git: git://code.x2go.org/libpam-x2go.git
+
+Package: libpam-x2go
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ pyhoca-cli,
+Description: PAM Module to auth against an X2Go server using PyHoca
+ Auth and session PAM module that uses PyHoca to authenticate against
+ an X2Go server as the remote host and user. Local account required.
+ Most useful with the pam-temp-account module.

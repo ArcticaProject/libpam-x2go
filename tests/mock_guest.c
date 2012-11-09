@@ -68,7 +68,7 @@ void _exit (int exitcode)
 
 #define BUFFER_SIZE  512
 
-/*Borrowed this code form socket-sucker.c in lightdm-remote-session-freerdp*/
+/*Borrowed this code form socket-sucker.c in lightdm-remote-session-x2go*/
 int
 socket_sucker ()
 {
@@ -85,7 +85,7 @@ socket_sucker ()
 
 	serv_addr.sun_family = AF_UNIX;
 	
-	int printsize = snprintf(serv_addr.sun_path, sizeof(serv_addr.sun_path) - 1, "%s/%s", home, ".freerdp-socket");
+	int printsize = snprintf(serv_addr.sun_path, sizeof(serv_addr.sun_path) - 1, "%s/%s", home, ".x2go-socket");
 	if (printsize > sizeof(serv_addr.sun_path) - 1 || printsize < 0) {
 		return -1;
 	}
