@@ -78,7 +78,7 @@ main (int argc, char * argv[])
 	if ( rc != SSH_AUTH_SUCCESS ) {
 		ssh_disconnect(auth_check_ssh_session);
 		ssh_free(auth_check_ssh_session);
-		return -1
+		return -1;
 	}
 
 	printf ("5\n");
