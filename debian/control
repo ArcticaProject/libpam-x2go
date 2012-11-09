@@ -11,6 +11,7 @@ Build-Depends:
  libssh-dev,
  pkg-config,
  cdbs,
+ dh-autoreconf,
 Standards-Version: 3.9.3
 Homepage: http://wiki.x2go.org
 Vcs-Git: git://code.x2go.org/libpam-x2go.git

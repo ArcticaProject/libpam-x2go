@@ -6,5 +6,7 @@ libpam-x2go (0.0.0.1-0~x2go1) UNRELEASED; urgency=low
       server).
   * /debian/rules:
     - Override auto_build with our own automake mechanism.
+  * /debian/control:
+    - Depend on dh-autoreconf.
 
  -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Fri, 09 Nov 2012 01:10:25 +0100
