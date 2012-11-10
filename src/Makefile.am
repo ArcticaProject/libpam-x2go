@@ -18,7 +18,7 @@ pam_x2go_la_CFLAGS = \
 	$(COVERAGE_CFLAGS)
 
 pam_x2go_la_LIBADD = \
-        -lpam
+	-lpam
 
 libexec_PROGRAMS = \
 	x2go-auth-check
