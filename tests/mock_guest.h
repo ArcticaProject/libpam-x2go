@@ -1,7 +1,9 @@
 /*
+ * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>.
  * Copyright © 2012 Canonical Ltd. All rights reserved.
  *
- * Author(s): David Barth <david.barth@canonical.com>
+ * Author(s): Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ *            David Barth <david.barth@canonical.com>
  *
  */
 
