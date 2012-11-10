@@ -155,9 +155,7 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		goto cleanup;
 	}
 
-	/* fill the buffer that we will pipe into the .x2go-socket file, the blank at the end of the string is tremendously
-	   important */
-	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s ", ruser, password, rhost, rdomain);
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, password, rhost, rdomain);
 	if (buffer_fill > buffer_len) {
 		/* This really shouldn't happen, but if for some reason we have an
 		   difference between they way that the lengths are calculated we want
