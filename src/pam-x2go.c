@@ -41,7 +41,7 @@
 
 static int unpriveleged_kill (struct passwd * pwdent);
 
-static char * global_domain = NULL;
+static char * global_session = NULL;
 /* FIXME? This is a work around to the fact that PAM seems to be clearing
    the auth token between authorize and open_session.  Which then requires
    us to save it.  Seems like we're the wrong people to do it, but we have
@@ -53,7 +53,7 @@ static char *
 get_item (pam_handle_t * pamh, int type)
 {
 	/* Check to see if we just have the value.  If we do, great
-	   let's dup it some we're consitently allocating memory */
+	   let's dup it some we're consistently allocating memory */
 	if (type != PAM_TYPE_DOMAIN) {
 		/* If it's not a domain we can use the PAM functions because the PAM
 		   functions don't support the domain */
@@ -69,8 +69,8 @@ get_item (pam_handle_t * pamh, int type)
 	} else {
 		/* Here we only have domains, so we can see if the global domain is
 		   useful for us, if we have it */
-		if (global_domain != NULL) {
-			return global_domain;
+		if (global_session != NULL) {
+			return global_session;
 		}
 	}
 	/* Now we need to prompt */
@@ -154,11 +154,11 @@ get_item (pam_handle_t * pamh, int type)
 		}
 		if (type == PAM_TYPE_DOMAIN) {
 			/* The domain can be saved globally so we can use it for open */
-			if (global_domain != NULL) {
-				free(global_domain);
+			if (global_session != NULL) {
+				free(global_session);
 			}
-			global_domain = strdup(promptval);
-			retval = global_domain;
+			global_session = strdup(promptval);
+			retval = global_session;
 		}
 		if (type == PAM_AUTHTOK) {
 			/* We also save the password globally if we've got one */
@@ -203,7 +203,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	char * password = NULL;
 	char * ruser = NULL;
 	char * rhost = NULL;
-	char * rdomain = NULL;
+	char * rsession = NULL;
 	int retval = PAM_IGNORE;
 
 	/* Get all the values, or prompt for them, or return with
@@ -211,7 +211,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rdomain,  PAM_TYPE_DOMAIN);
+	GET_ITEM(rsession,  PAM_TYPE_DOMAIN);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	int stdinpipe[2];
@@ -224,7 +224,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	pid_t pid;
 	switch (pid = fork()) {
 	case 0: { /* child */
-		pam_sm_authenticate_helper (stdinpipe, username, rhost, ruser, rdomain);
+		pam_sm_authenticate_helper (stdinpipe, username, rhost, ruser, rsession);
 		break;
 	}
 	case -1: { /* fork'n error! */
@@ -268,7 +268,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	char * password = NULL;
 	char * ruser = NULL;
 	char * rhost = NULL;
-	char * rdomain = NULL;
+	char * rsession = NULL;
 	int retval = PAM_SUCCESS;
 
 	/* Get all the values, or prompt for them, or return with
@@ -276,7 +276,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rdomain,  PAM_TYPE_DOMAIN);
+	GET_ITEM(rsession,  PAM_TYPE_DOMAIN);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	struct passwd * pwdent = getpwnam(username);
@@ -298,7 +298,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	pid_t pid = fork();
 	if (pid == 0) {
 		
-		int ret = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rdomain, password);
+		int ret = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rsession, password);
 
 		close(sessionready[1]);
 		_exit(ret);
