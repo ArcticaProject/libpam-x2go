@@ -16,7 +16,7 @@ pam_x2go_la_CFLAGS = \
 	$(COVERAGE_CFLAGS)
 
 pam_x2go_la_LIBADD = \
-        $(builddir)/libfreerdpcore.la
+        $(builddir)/libx2gocore.la
 
 libx2gocore_la_SOURCES = \
         pam-x2go.c \
