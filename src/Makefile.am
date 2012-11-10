@@ -15,6 +15,17 @@ pam_x2go_la_CFLAGS = \
 	-DAUTH_CHECK="\"$(libexecdir)/x2go-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
+libx2gocore_la_SOURCES = \
+        pam-x2go.c \
+        pam-x2go-children.c
+libx2gocore_la_CFLAGS = \
+        -Wall -Werror \
+        $(COVERAGE_CFLAGS)
+libx2gocore_la_LIBADD = \
+        -lpam
+libx2gocore_la_LDFLAGS = \
+        $(COVERAGE_LDFLAGS)
+
 libexec_PROGRAMS = \
 	x2go-auth-check
 
