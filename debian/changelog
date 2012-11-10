@@ -1,4 +1,4 @@
-libpam-x2go (0.0.0.1-0~x2go1) UNRELEASED; urgency=low
+libpam-x2go (0.0.0.1-0~x2go1) unstable; urgency=low
 
   * Initial upstream release. Forked from libpam-freerdp (by Ted Gould
     <ted@canonical.com>).
@@ -12,4 +12,4 @@ libpam-x2go (0.0.0.1-0~x2go1) UNRELEASED; urgency=low
   * /debian/control:
     - Depend on dh-autoreconf.
 
- -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Fri, 09 Nov 2012 01:10:25 +0100
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Sat, 10 Nov 2012 22:21:10 +0100
