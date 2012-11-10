@@ -2,7 +2,9 @@ pamlibdir = $(PAMMODULEDIR)
 pamlib_LTLIBRARIES = pam_x2go.la
 
 pam_x2go_la_SOURCES = \
-	auth-check-path.c auth-check-path.h
+	auth-check-path.c auth-check-path.h \
+	pam-x2go.c \
+	pam-x2go-children.c
 
 pam_x2go_la_LDFLAGS = \
 	-no-undefined \
@@ -16,18 +18,7 @@ pam_x2go_la_CFLAGS = \
 	$(COVERAGE_CFLAGS)
 
 pam_x2go_la_LIBADD = \
-        $(builddir)/libx2gocore.la
-
-libx2gocore_la_SOURCES = \
-        pam-x2go.c \
-        pam-x2go-children.c
-libx2gocore_la_CFLAGS = \
-        -Wall -Werror \
-        $(COVERAGE_CFLAGS)
-libx2gocore_la_LIBADD = \
         -lpam
-libx2gocore_la_LDFLAGS = \
-        $(COVERAGE_LDFLAGS)
 
 libexec_PROGRAMS = \
 	x2go-auth-check
