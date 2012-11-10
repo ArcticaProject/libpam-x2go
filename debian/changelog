@@ -5,6 +5,8 @@ libpam-x2go (0.0.0.1-0~x2go1) UNRELEASED; urgency=low
   * Adaptations of the forked original to work with X2Go:
     - Check the authentication token via libssh (ssh login to the remote
       server).
+    - Set PAM_SM_AUTH and PAM_SM_SESSION before including
+      security/pam_modules.h.
   * /debian/rules:
     - Override auto_build with our own automake mechanism.
   * /debian/control:

@@ -30,6 +30,8 @@
 #include <grp.h>
 #include <errno.h>
 
+#define PAM_SM_AUTH
+#define PAM_SM_SESSION
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
