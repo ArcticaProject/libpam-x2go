@@ -15,6 +15,9 @@ pam_x2go_la_CFLAGS = \
 	-DAUTH_CHECK="\"$(libexecdir)/x2go-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
+pam_x2go_la_LIBADD = \
+        $(builddir)/libfreerdpcore.la
+
 libx2gocore_la_SOURCES = \
         pam-x2go.c \
         pam-x2go-children.c
