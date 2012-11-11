@@ -1,3 +1,9 @@
+libpam-x2go (0.0.0.2-0~x2go1) UNRELEASED; urgency=low
+
+  * Continue development...
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Sun, 11 Nov 2012 13:57:44 +0100
+
 libpam-x2go (0.0.0.1-0~x2go1) unstable; urgency=low
 
   * Initial upstream release. Forked from libpam-freerdp (by Ted Gould
