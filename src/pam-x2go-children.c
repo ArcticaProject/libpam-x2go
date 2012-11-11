@@ -65,7 +65,7 @@ pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rh
 	}
 
 	if (setgid(pwdent->pw_gid) < 0 || setuid(pwdent->pw_uid) < 0 ||
-	    setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
+			setegid(pwdent->pw_gid) < 0 || seteuid(pwdent->pw_uid) < 0) {
 		_exit(EXIT_FAILURE);
 	}
 
@@ -138,7 +138,6 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
 	buffer_len += strlen(rsession) + 1;  /* Add one for the space */
 	buffer_len += strlen(password) + 1; /* Add one for the NULL */
-	buffer_len += 2 /* one for EOL, another for EOF */
 
 	if (buffer_len < 5) {
 		/* Don't need to clean up yet */
@@ -158,7 +157,7 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		goto cleanup;
 	}
 
-	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s%s%s", ruser, rhost, rsession, password, EOL, EOF);
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, rhost, rsession, password);
 	if (buffer_fill > buffer_len) {
 		/* This really shouldn't happen, but if for some reason we have an
 		   difference between they way that the lengths are calculated we want
