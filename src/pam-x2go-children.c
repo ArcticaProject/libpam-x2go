@@ -158,7 +158,7 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		goto cleanup;
 	}
 
-	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s%s%s", ruser, rhost, rsession, password, EOL, EOF);
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s\n%s", ruser, rhost, rsession, password, EOF);
 	if (buffer_fill > buffer_len) {
 		/* This really shouldn't happen, but if for some reason we have an
 		   difference between they way that the lengths are calculated we want
