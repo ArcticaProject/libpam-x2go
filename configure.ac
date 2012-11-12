@@ -1,8 +1,8 @@
 AC_INIT([libpam-x2go], [1.0.1])
 AC_CONFIG_HEADERS([config.h])
 
-AM_INIT_AUTOMAKE([1.11 -Wno-portability])
-AM_SILENT_RULES([yes])
+AM_INIT_AUTOMAKE([-Wno-portability])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PROG_CC
 # the Google Test targets are cpp
