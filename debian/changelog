@@ -1,3 +1,9 @@
+libpam-x2go (0.0.1.0-0~x2go1) UNRELEASED; urgency=low
+
+  * Continue development...
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Wed, 24 Apr 2013 18:30:42 +0200
+
 libpam-x2go (0.0.0.2-0~x2go1) unstable; urgency=low
 
   [ Jan Engelhardt ]
