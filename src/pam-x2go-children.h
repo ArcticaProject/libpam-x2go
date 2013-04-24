@@ -1,4 +1,5 @@
 /*
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -19,7 +20,7 @@
 #ifndef _PAM_X2GO_CHILDREN_H_
 #define _PAM_X2GO_CHILDREN_H_
 
-#define PAM_TYPE_DOMAIN  1234
+#define PAM_TYPE_SESSIONTYPE  1234
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
 void

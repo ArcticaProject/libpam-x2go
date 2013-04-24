@@ -1,6 +1,8 @@
 libpam-x2go (0.0.1.0-0~x2go1) UNRELEASED; urgency=low
 
-  * Continue development...
+  * New upstream version (0.0.1.0):
+    - Adapt to changes in lightdm-remote-login-x2go (0.0.1.0). Expect
+      a UCCS service that supports session type »x2go».
 
  -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Wed, 24 Apr 2013 18:30:42 +0200
 

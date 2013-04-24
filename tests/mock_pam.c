@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>.
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>.
  * Copyright © 2012 Canonical Ltd. All rights reserved.
  *
  * Author(s): Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
@@ -39,8 +39,8 @@ int fake_conv (int num_msg, const struct pam_message **msg,
 		response->resp = strdup ("protocol://rhost/dummy");
 	else if (strcmp((*msg)->msg, "password:") == 0)
 		response->resp = strdup ("password");
-	else if (strcmp((*msg)->msg, "domain:") == 0)
-		response->resp = strdup ("domain");
+	else if (strcmp((*msg)->msg, "sessiontype:") == 0)
+		response->resp = strdup ("sessiontype");
 	else
 		return PAM_SYMBOL_ERR; /* leaks... */
 

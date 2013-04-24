@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it

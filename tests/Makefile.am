@@ -41,21 +41,21 @@ libgtest_a_CXXFLAGS = \
 
 test_x2go_wrapper: test-x2go-auth
 
-test_pyhoca_wrapper_SOURCES = \
+test_x2go_wrapper_SOURCES = \
 	mock_pam.c mock_pam.h \
 	mock_guest.c mock_guest.h \
 	test-x2go-wrapper.cc
 
-test_pyhoca_wrapper_LDADD = \
+test_x2go_wrapper_LDADD = \
 	$(top_builddir)/src/libssh.la \
 	libgtest.a
 
-test_pyhoca_wrapper_CXXFLAGS = \
+test_x2go_wrapper_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
 	-DAUTH_CHECK="\"$(abs_builddir)/test-x2go-auth\"" \
 	-I${top_srcdir}/src
 
-test_pyhoca_wrapper_LDFLAGS = \
+test_x2go_wrapper_LDFLAGS = \
 	-pthread
 
 ##########################

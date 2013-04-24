@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>.
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>.
  * Copyright © 2012 Canonical Ltd. All rights reserved.
  *
  * Author(s): Mike Gabriel <mike.gabriel@das-netzwerkteam.de>

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -56,9 +56,9 @@ get_item (pam_handle_t * pamh, int type)
 {
 	/* Check to see if we just have the value.  If we do, great
 	   let's dup it some we're consistently allocating memory */
-	if (type != PAM_TYPE_DOMAIN) {
-		/* If it's not a domain we can use the PAM functions because the PAM
-		   functions don't support the domain */
+	if (type != PAM_TYPE_SESSIONTYPE) {
+		/* If it's not a session type we can use the PAM functions because the PAM
+		   functions don't support session type */
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return value;
@@ -69,7 +69,7 @@ get_item (pam_handle_t * pamh, int type)
 			return global_password;
 		}
 	} else {
-		/* Here we only have domains, so we can see if the global domain is
+		/* Here we only have session type, so we can see if the global session type is
 		   useful for us, if we have it */
 		if (global_session != NULL) {
 			return global_session;
@@ -98,8 +98,8 @@ get_item (pam_handle_t * pamh, int type)
 		message.msg = "password:";
 		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
-	case PAM_TYPE_DOMAIN:
-		message.msg = "domain:";
+	case PAM_TYPE_SESSIONTYPE:
+		message.msg = "sessiontype:";
 		break;
 	default:
 		return NULL;
@@ -148,14 +148,14 @@ get_item (pam_handle_t * pamh, int type)
 
 	char * retval = NULL;
 	if (promptval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
-		if (type != PAM_TYPE_DOMAIN) {
-			/* We can only use the PAM functions if it's not the domain */
+		if (type != PAM_TYPE_SESSIONTYPE) {
+			/* We can only use the PAM functions if it's not the session type */
 			pam_set_item(pamh, type, (const void *)promptval);
 			/* We're returning the value saved by PAM so we can clear promptval */
 			pam_get_item(pamh, type, (const void **)&retval);
 		}
-		if (type == PAM_TYPE_DOMAIN) {
-			/* The domain can be saved globally so we can use it for open */
+		if (type == PAM_TYPE_SESSIONTYPE) {
+			/* The session type can be saved globally so we can use it for open */
 			if (global_session != NULL) {
 				free(global_session);
 			}
@@ -213,7 +213,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession,  PAM_TYPE_DOMAIN);
+	GET_ITEM(rsession,  PAM_TYPE_SESSIONTYPE);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	int stdinpipe[2];
@@ -278,7 +278,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession,  PAM_TYPE_DOMAIN);
+	GET_ITEM(rsession,  PAM_TYPE_SESSIONTYPE);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	struct passwd * pwdent = getpwnam(username);

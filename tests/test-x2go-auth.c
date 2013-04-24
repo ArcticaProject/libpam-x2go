@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ * Copyright © 2012-2013 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -45,8 +45,8 @@ main (int argc, char * argv[])
 		return -1;
 	}
 
-	/* Check domain */
-	if (strcmp(argv[3], "domain")) {
+	/* Check session type */
+	if (strcmp(argv[3], "sessiontype")) {
 		return -1;
 	}
 
