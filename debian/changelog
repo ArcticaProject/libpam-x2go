@@ -1,10 +1,10 @@
-libpam-x2go (0.0.0.2-0~x2go1) UNRELEASED; urgency=low
+libpam-x2go (0.0.0.2-0~x2go1) unstable; urgency=low
 
   [ Jan Engelhardt ]
   * New upstream version (0.0.0.2):
     - Continue to run even in the absence of AM_SILENT_RULES.
 
- -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Sun, 11 Nov 2012 13:57:44 +0100
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Wed, 24 Apr 2013 18:30:22 +0200
 
 libpam-x2go (0.0.0.1-0~x2go1) unstable; urgency=low
 
