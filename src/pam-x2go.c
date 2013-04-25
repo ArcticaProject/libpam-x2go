@@ -99,7 +99,7 @@ get_item (pam_handle_t * pamh, int type)
 		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
 	case PAM_TYPE_SESSIONTYPE:
-		message.msg = "sessiontype:";
+		message.msg = "x2gosession:";
 		break;
 	default:
 		return NULL;
