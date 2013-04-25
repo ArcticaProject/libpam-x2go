@@ -213,7 +213,7 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession,  PAM_TYPE_SESSIONTYPE);
+	GET_ITEM(rsession, PAM_TYPE_SESSIONTYPE);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	int stdinpipe[2];
@@ -278,7 +278,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	GET_ITEM(username, PAM_USER);
 	GET_ITEM(ruser,    PAM_RUSER);
 	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession,  PAM_TYPE_SESSIONTYPE);
+	GET_ITEM(rsession, PAM_TYPE_SESSIONTYPE);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	struct passwd * pwdent = getpwnam(username);
