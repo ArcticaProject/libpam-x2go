@@ -55,8 +55,9 @@ AC_SUBST(PAMMODULEDIR)
 m4_include([m4/gtest.m4])
 CHECK_GTEST
 if test "x$have_gtest" != "xyes"; then
-   AC_MSG_ERROR([tests were requested but gtest is not installed.])
+   AC_MSG_WARN([tests were requested but gtest is not installed.])
 fi
+AM_CONDITIONAL([HAVE_GTEST], [test "$have_gtest" != "no"])
 
 ###########################
 # gcov coverage reporting
