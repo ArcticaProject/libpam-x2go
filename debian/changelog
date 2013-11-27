@@ -4,6 +4,10 @@ libpam-x2go (0.0.1.1-0~x2go1) UNRELEASED; urgency=low
   * New upstream version (0.0.1.1):
     - Make building tests optional. (Fixes: #196).
 
+  [ Mike Gabriel ]
+  * debian/source/format:
+    + Switch to format 1.0.
+
  -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Tue, 30 Apr 2013 17:40:29 +0200
 
 libpam-x2go (0.0.1.0-0~x2go1) unstable; urgency=low
