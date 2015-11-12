@@ -1,4 +1,4 @@
-libpam-x2go (0.0.1.1-0~x2go1) UNRELEASED; urgency=low
+libpam-x2go (0.0.1.1-0) UNRELEASED; urgency=low
 
   [ Jan Engelhardt ]
   * New upstream version (0.0.1.1):
