@@ -1,14 +1,9 @@
-libpam-x2go (0.0.1.1-0) UNRELEASED; urgency=low
+libpam-x2go (0.0.1.1-0) unstable; urgency=low
 
-  [ Jan Engelhardt ]
-  * New upstream version (0.0.1.1):
-    - Make building tests optional. (Fixes: #196).
+  * Upstream-provided Debian package for nx-libs.
+    See upstream ChangeLog for recent changes.
 
-  [ Mike Gabriel ]
-  * debian/source/format:
-    + Switch to format 1.0.
-
- -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Tue, 30 Apr 2013 17:40:29 +0200
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Wed, 31 May 2017 13:39:20 +0200
 
 libpam-x2go (0.0.1.0-0~x2go1) unstable; urgency=low
 
