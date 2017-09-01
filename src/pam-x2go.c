@@ -389,7 +389,7 @@ unpriveleged_kill (struct passwd * pwdent)
 		/* NOTE: We're ignoring whether we could kill it or not.  It'd be nice to
 		   track that but there are a lot of reason that we could fail there and
 		   it's not a bad thing.  Really we're attempting a best effort to clean up
-		   we won't be able to gaurantee it. */
+		   we won't be able to guarantee it. */
 		_exit(EXIT_SUCCESS);	
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
