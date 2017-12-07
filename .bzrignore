@@ -1,7 +1,0 @@
-libpam-x2go-[0-9].[0-9].[0-9].tar.gz
-libpam-x2go-[0-9].[0-9].[0-9].tar.gz.asc
-src/pam_x2go.la
-src/pam_x2go_la-pam-x2go.lo
-src/pam_x2go_la-pam-x2go.o
-src/pam-x2go.la
-x2go-auth-check
