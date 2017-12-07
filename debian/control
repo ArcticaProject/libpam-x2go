@@ -1,6 +1,6 @@
 Source: libpam-x2go
 Section: misc
-Priority: extra
+Priority: optional
 Maintainer: Artica Project <devs@lists.arctica-project.org>
 Uploaders:
  Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
