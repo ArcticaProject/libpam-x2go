@@ -1,7 +1,7 @@
 Source: libpam-x2go
 Section: misc
 Priority: extra
-Maintainer: X2Go Developers <x2go-dev@lists.berlios.de>
+Maintainer: Artica Project <devs@lists.arctica-project.org>
 Uploaders:
  Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Build-Depends:
