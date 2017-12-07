@@ -23,7 +23,7 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
 Suggests:
- x2goclient | pyhoca-cli,
+ pyhoca-cli,
 Description: PAM Module to auth against an X2Go server using PyHoca
  Auth and session PAM module that uses SSH to authenticate against
  an X2Go server as the remote host and user. Local account required.
