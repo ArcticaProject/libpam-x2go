@@ -28,24 +28,10 @@ fi
 PKG_CHECK_MODULES(LIBSSH, libssh)
 
 ###########################
-# Local Install
-###########################
-
-with_localinstall="no"
-AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall],
-                                           [install all files locally (for distcheck)]),
-              with_localinstall=$enableval,
-              with_localinstall=no)
-
-###########################
 # PAM Module dir
 ###########################
 
-if test "x$with_localinstall" = "xyes"; then
-	PAMMODULEDIR="${libdir}/security/"
-else
-	PAMMODULEDIR="/lib/security"
-fi
+PAMMODULEDIR="/lib/security"
 AC_SUBST(PAMMODULEDIR)
 
 ###########################
