@@ -1,5 +1,6 @@
 AC_INIT([libpam-x2go], [0.0.1.1])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIRS([m4])
 
 AM_INIT_AUTOMAKE([-Wno-portability])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
