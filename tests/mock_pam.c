@@ -39,8 +39,8 @@ int fake_conv (int num_msg, const struct pam_message **msg,
 		response->resp = strdup ("protocol://rhost/dummy");
 	else if (strcmp((*msg)->msg, "password:") == 0)
 		response->resp = strdup ("password");
-	else if (strcmp((*msg)->msg, "sessiontype:") == 0)
-		response->resp = strdup ("sessiontype");
+	else if (strcmp((*msg)->msg, "remote command:") == 0)
+		response->resp = strdup ("rcommand");
 	else
 		return PAM_SYMBOL_ERR; /* leaks... */
 

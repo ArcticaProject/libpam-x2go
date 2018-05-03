@@ -46,7 +46,7 @@ main (int argc, char * argv[])
 	}
 
 	/* Check session type */
-	if (strcmp(argv[3], "sessiontype")) {
+	if (strcmp(argv[3], "rcommand")) {
 		return -1;
 	}
 

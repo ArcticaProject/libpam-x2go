@@ -106,7 +106,7 @@ get_item (pam_handle_t * pamh, int type)
 		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
 	case PAM_TYPE_X2GO_COMMAND:
-		message.msg = "x2gosession:";
+		message.msg = "remote command:";
 		break;
 	default:
 		return NULL;
