@@ -43,7 +43,9 @@
 
 static int unpriveleged_kill (struct passwd * pwdent);
 
-static char * global_session = NULL;
+static char * global_x2go_user = NULL;
+static char * global_x2go_server = NULL;
+static char * global_x2go_command = NULL;
 /* FIXME? This is a work around to the fact that PAM seems to be clearing
    the auth token between authorize and open_session.  Which then requires
    us to save it.  Seems like we're the wrong people to do it, but we have
@@ -56,7 +58,7 @@ get_item (pam_handle_t * pamh, int type)
 {
 	/* Check to see if we just have the value.  If we do, great
 	   let's dup it some we're consistently allocating memory */
-	if (type != PAM_TYPE_SESSIONTYPE) {
+	if ((type == PAM_USER) || (type == PAM_AUTHTOK)) {
 		/* If it's not a session type we can use the PAM functions because the PAM
 		   functions don't support session type */
 		char * value = NULL;
@@ -69,10 +71,15 @@ get_item (pam_handle_t * pamh, int type)
 			return global_password;
 		}
 	} else {
-		/* Here we only have session type, so we can see if the global session type is
-		   useful for us, if we have it */
-		if (global_session != NULL) {
-			return global_session;
+		/* Here we deal with all X2Go specific parameters */
+		if ((type == PAM_TYPE_X2GO_USER) && (global_x2go_user != NULL)) {
+			return global_x2go_user;
+		}
+		if ((type == PAM_TYPE_X2GO_SERVER) && (global_x2go_server != NULL)) {
+			return global_x2go_server;
+		}
+		if ((type == PAM_TYPE_X2GO_COMMAND) && (global_x2go_command != NULL)) {
+			return global_x2go_command;
 		}
 	}
 	/* Now we need to prompt */
@@ -88,17 +95,17 @@ get_item (pam_handle_t * pamh, int type)
 	case PAM_USER:
 		message.msg = "login:";
 		break;
-	case PAM_RUSER:
+	case PAM_TYPE_X2GO_USER:
 		message.msg = "remote login:";
 		break;
-	case PAM_RHOST:
+	case PAM_TYPE_X2GO_SERVER:
 		message.msg = "remote host:";
 		break;
 	case PAM_AUTHTOK:
 		message.msg = "password:";
 		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
-	case PAM_TYPE_SESSIONTYPE:
+	case PAM_TYPE_X2GO_COMMAND:
 		message.msg = "x2gosession:";
 		break;
 	default:
@@ -130,7 +137,7 @@ get_item (pam_handle_t * pamh, int type)
 		}
 	}
 
-	if (type == PAM_RHOST) {
+	if (type == PAM_TYPE_X2GO_SERVER) {
 		char * subloc = strstr(promptval, "://");
 		if (subloc != NULL) {
 			char * original = promptval;
@@ -148,19 +155,35 @@ get_item (pam_handle_t * pamh, int type)
 
 	char * retval = NULL;
 	if (promptval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
-		if (type != PAM_TYPE_SESSIONTYPE) {
+		if ((type == PAM_USER) || (type == PAM_AUTHTOK)) {
 			/* We can only use the PAM functions if it's not the session type */
 			pam_set_item(pamh, type, (const void *)promptval);
 			/* We're returning the value saved by PAM so we can clear promptval */
 			pam_get_item(pamh, type, (const void **)&retval);
 		}
-		if (type == PAM_TYPE_SESSIONTYPE) {
-			/* The session type can be saved globally so we can use it for open */
-			if (global_session != NULL) {
-				free(global_session);
+		if (type == PAM_TYPE_X2GO_USER) {
+			/* The server can be saved globally */
+			if (global_x2go_user != NULL) {
+				free(global_x2go_user);
 			}
-			global_session = strdup(promptval);
-			retval = global_session;
+			global_x2go_user = strdup(promptval);
+			retval = global_x2go_user;
+		}
+		if (type == PAM_TYPE_X2GO_SERVER) {
+			/* The server can be saved globally */
+			if (global_x2go_server != NULL) {
+				free(global_x2go_server);
+			}
+			global_x2go_server = strdup(promptval);
+			retval = global_x2go_server;
+		}
+		if (type == PAM_TYPE_X2GO_COMMAND) {
+			/* The session type can be saved globally so we can use it for open */
+			if (global_x2go_command != NULL) {
+				free(global_x2go_command);
+			}
+			global_x2go_command = strdup(promptval);
+			retval = global_x2go_command;
 		}
 		if (type == PAM_AUTHTOK) {
 			/* We also save the password globally if we've got one */
@@ -205,15 +228,15 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	char * password = NULL;
 	char * ruser = NULL;
 	char * rhost = NULL;
-	char * rsession = NULL;
+	char * rcommand = NULL;
 	int retval = PAM_IGNORE;
 
 	/* Get all the values, or prompt for them, or return with
 	   an auth error */
 	GET_ITEM(username, PAM_USER);
-	GET_ITEM(ruser,    PAM_RUSER);
-	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession, PAM_TYPE_SESSIONTYPE);
+	GET_ITEM(ruser,    PAM_TYPE_X2GO_USER);
+	GET_ITEM(rhost,    PAM_TYPE_X2GO_SERVER);
+	GET_ITEM(rcommand, PAM_TYPE_X2GO_COMMAND);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	int stdinpipe[2];
@@ -225,31 +248,31 @@ pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv)
 	/* At this point we should have the values, let's check the auth */
 	pid_t pid;
 	switch (pid = fork()) {
-	case 0: { /* child */
-		pam_sm_authenticate_helper (stdinpipe, username, rhost, ruser, rsession);
-		break;
-	}
-	case -1: { /* fork'n error! */
-		retval = PAM_SYSTEM_ERR;
-		break;
-	}
-	default: {
-		int forkret = 0;
-		int bytesout = 0;
-
-		bytesout += write(stdinpipe[1], password, strlen(password));
-		bytesout += write(stdinpipe[1], "\n", 1);
-
-		close(stdinpipe[1]);
-
-		if (waitpid(pid, &forkret, 0) < 0 || bytesout == 0) {
-			retval = PAM_SYSTEM_ERR;
-		} else if (forkret == 0) {
-			retval = PAM_SUCCESS;
-		} else {
-			retval = PAM_AUTH_ERR;
+		case 0: { /* child */
+			pam_sm_authenticate_helper (stdinpipe, username, rhost, ruser, rcommand);
+			break;
 		}
-	}
+		case -1: { /* fork'n error! */
+			retval = PAM_SYSTEM_ERR;
+			break;
+		}
+		default: {
+			int forkret = 0;
+			int bytesout = 0;
+
+			bytesout += write(stdinpipe[1], password, strlen(password));
+			bytesout += write(stdinpipe[1], "\n", 1);
+
+			close(stdinpipe[1]);
+
+			if (waitpid(pid, &forkret, 0) < 0 || bytesout == 0) {
+				retval = PAM_SYSTEM_ERR;
+			} else if (forkret == 0) {
+				retval = PAM_SUCCESS;
+			} else {
+				retval = PAM_AUTH_ERR;
+			}
+		}
 	}
 
 	/* Return our status */
@@ -270,15 +293,15 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	char * password = NULL;
 	char * ruser = NULL;
 	char * rhost = NULL;
-	char * rsession = NULL;
+	char * rcommand = NULL;
 	int retval = PAM_SUCCESS;
 
 	/* Get all the values, or prompt for them, or return with
 	   an auth error */
 	GET_ITEM(username, PAM_USER);
-	GET_ITEM(ruser,    PAM_RUSER);
-	GET_ITEM(rhost,    PAM_RHOST);
-	GET_ITEM(rsession, PAM_TYPE_SESSIONTYPE);
+	GET_ITEM(ruser,    PAM_TYPE_X2GO_USER);
+	GET_ITEM(rhost,    PAM_TYPE_X2GO_SERVER);
+	GET_ITEM(rcommand, PAM_TYPE_X2GO_COMMAND);
 	GET_ITEM(password, PAM_AUTHTOK);
 
 	struct passwd * pwdent = getpwnam(username);
@@ -300,7 +323,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 	pid_t pid = fork();
 	if (pid == 0) {
 		
-		int ret = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rsession, password);
+		int ret = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rcommand, password);
 
 		close(sessionready[1]);
 		_exit(ret);

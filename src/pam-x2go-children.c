@@ -40,7 +40,7 @@
 #include "auth-check-path.h"
 
 void
-pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rhost, const char* ruser, const char* rsession)
+pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rhost, const char* ruser, const char* rcommand)
 {
 
 	dup2(stdinpipe[0], 0);
@@ -50,7 +50,7 @@ pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rh
 	args[0] = (char *)auth_check_path;
 	args[1] = (char *)rhost;
 	args[2] = (char *)ruser;
-	args[3] = (char *)rsession;
+	args[3] = (char *)rcommand;
 	args[4] = NULL;
 
 	struct passwd * pwdent = getpwnam(username);
@@ -84,7 +84,7 @@ pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rh
 }
 
 int
-session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rsession, const char * password)
+session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rcommand, const char * password)
 {
 	/* Socket stuff */
 	int socketfd = 0;
@@ -128,15 +128,15 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		return EXIT_FAILURE;
 	}
 
-	if (rsession[0] == '\0') {
-		rsession = "TERMINAL";
+	if (rcommand[0] == '\0') {
+		rcommand = "TERMINAL";
 	}
 
 	/* Build this up as a buffer so we can just write it and see that
 	   very, very clearly */
 	buffer_len += strlen(ruser) + 1;    /* Add one for the space */
 	buffer_len += strlen(rhost) + 1;    /* Add one for the space */
-	buffer_len += strlen(rsession) + 1;  /* Add one for the space */
+	buffer_len += strlen(rcommand) + 1;  /* Add one for the space */
 	buffer_len += strlen(password) + 1; /* Add one for the NULL */
 
 	if (buffer_len < 5) {
@@ -157,7 +157,7 @@ session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruse
 		goto cleanup;
 	}
 
-	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, rhost, rsession, password);
+	buffer_fill = snprintf(buffer, buffer_len, "%s %s %s %s", ruser, rhost, rcommand, password);
 	if (buffer_fill > buffer_len) {
 		/* This really shouldn't happen, but if for some reason we have an
 		   difference between they way that the lengths are calculated we want
@@ -230,4 +230,3 @@ cleanup:
 
 	_exit(EXIT_FAILURE);
 }
-

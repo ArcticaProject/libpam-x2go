@@ -20,7 +20,9 @@
 #ifndef _PAM_X2GO_CHILDREN_H_
 #define _PAM_X2GO_CHILDREN_H_
 
-#define PAM_TYPE_SESSIONTYPE  1234
+#define PAM_TYPE_X2GO_USER    1234
+#define PAM_TYPE_X2GO_SERVER  1235
+#define PAM_TYPE_X2GO_COMMAND 1236
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
 void
