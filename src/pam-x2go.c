@@ -162,7 +162,7 @@ get_item (pam_handle_t * pamh, int type)
 			pam_get_item(pamh, type, (const void **)&retval);
 		}
 		if (type == PAM_TYPE_X2GO_USER) {
-			/* The server can be saved globally */
+			/* The remote user can be saved globally */
 			if (global_x2go_user != NULL) {
 				free(global_x2go_user);
 			}
@@ -170,7 +170,7 @@ get_item (pam_handle_t * pamh, int type)
 			retval = global_x2go_user;
 		}
 		if (type == PAM_TYPE_X2GO_SERVER) {
-			/* The server can be saved globally */
+			/* The remote server can be saved globally */
 			if (global_x2go_server != NULL) {
 				free(global_x2go_server);
 			}
@@ -178,7 +178,7 @@ get_item (pam_handle_t * pamh, int type)
 			retval = global_x2go_server;
 		}
 		if (type == PAM_TYPE_X2GO_COMMAND) {
-			/* The session type can be saved globally so we can use it for open */
+			/* The remote command can be saved globally */
 			if (global_x2go_command != NULL) {
 				free(global_x2go_command);
 			}
