@@ -1,6 +1,6 @@
-SUBDIRS = src
+ACLOCAL_AMFLAGS = -I m4
 
-ACLOCAL_AMFLAGS = '-I m4'
+SUBDIRS = src
 
 if HAVE_GTEST
 SUBDIRS += tests
