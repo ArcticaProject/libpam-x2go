@@ -13,6 +13,11 @@ check_PROGRAMS =						\
         $(TESTS)						\
         $(NULL)
 
+CLEANFILES +=							\
+        test-x2go-auth						\
+        $(TESTS)						\
+        $(NULL)
+
 AM_CPPFLAGS = $(GTEST_CPPFLAGS)					\
         $(REMOTE_APPS_MANAGER_CFLAGS)				\
         -I${top_srcdir}/src -Wall -Werror			\
@@ -31,18 +36,39 @@ AM_CFLAGS =							\
 # Google Test Test Suite #
 ##########################
 
-check_LIBRARIES = libgtest.a
+check_LIBRARIES = libgtest.a libgtest_main.a
+
+gtest-all.cc:
+	cp $(GTEST_SOURCE)/src/gtest-all.cc .
+
+gtest_main.cc:
+	cp $(GTEST_SOURCE)/src/gtest_main.cc .
+
+CLEANFILES +=							\
+        gtest-all.cc						\
+        gtest_main.cc						\
+        $(NULL)
 
 nodist_libgtest_a_SOURCES =					\
-        $(GTEST_SOURCE)/src/gtest-all.cc			\
-        $(GTEST_SOURCE)/src/gtest_main.cc			\
+        gtest-all.cc					\
+        $(NULL)
+nodist_libgtest_main_a_SOURCES =				\
+        gtest_main.cc					\
         $(NULL)
 
 libgtest_a_CPPFLAGS =						\
         $(GTEST_CPPFLAGS) -w					\
         $(AM_CPPFLAGS)						\
         $(NULL)
+libgtest_main_a_CPPFLAGS =					\
+        $(GTEST_CPPFLAGS) -w					\
+        $(AM_CPPFLAGS)						\
+        $(NULL)
+
 libgtest_a_CXXFLAGS =						\
+        $(AM_CXXFLAGS)						\
+        $(NULL)
+libgtest_main_a_CXXFLAGS =					\
         $(AM_CXXFLAGS)						\
         $(NULL)
 
@@ -59,17 +85,29 @@ test_x2go_wrapper_SOURCES =					\
         $(NULL)
 
 test_x2go_wrapper_LDADD =					\
-        $(top_builddir)/src/libssh.la				\
-        libgtest.a						\
+        libgtest.a libgtest_main.a				\
+        ${top_srcdir}/src/pam_x2go.la				\
+        $(LIBSSH_LIBS)						\
+        $(NULL)
+
+test_x2go_wrapper_CPPFLAGS =					\
+        $(AM_CPPFLAGS)						\
+        -I${top_srcdir}/include					\
+        -I${top_srcdir}/src					\
+        $(GTEST_CPPFLAGS)					\
+        $(LIBSSH_CPPFLAGS)					\
         $(NULL)
 
 test_x2go_wrapper_CXXFLAGS =					\
         $(AM_CXXFLAGS)						\
         -DAUTH_CHECK="\"$(abs_builddir)/test-x2go-auth\""	\
-        -I${top_srcdir}/src					\
+        $(GTEST_CXXFLAGS)					\
+        $(LIBSSH_CXXFLAGS)					\
         $(NULL)
 
 test_x2go_wrapper_LDFLAGS =					\
+        $(GTEST_LDFLAGS)					\
+        $(LIBSSH_LDFLAGS)					\
         -pthread						\
         $(NULL)
 
@@ -80,4 +118,3 @@ test_x2go_wrapper_LDFLAGS =					\
 test_x2go_auth_SOURCES =					\
         test-x2go-auth.c					\
         $(NULL)
-

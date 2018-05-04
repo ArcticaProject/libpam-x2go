@@ -13,10 +13,11 @@ extern "C" {
 
 #include "mock_pam.h"
 #include "mock_guest.h"
+#include "pam-x2go-private.h"
 
 	int x2goclient_wrapper (int argc, char * argv[]);
 
-const char * auth_check_path = AUTH_CHECK;
+	const char * auth_check_path = AUTH_CHECK;
 
 }
 
