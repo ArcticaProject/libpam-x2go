@@ -1,3 +1,5 @@
+NULL =
+
 pamlibdir = $(PAMMODULEDIR)
 pamlib_LTLIBRARIES = pam_x2go.la
 
@@ -17,8 +19,17 @@ pam_x2go_la_CFLAGS = \
 	-DAUTH_CHECK="\"$(libexecdir)/x2go-auth-check\"" \
 	$(COVERAGE_CFLAGS)
 
+pam_x2go_la_CPPFLAGS =				\
+    -I$(top_srcdir)/include			\
+    $(NULL)
+
 pam_x2go_la_LIBADD = \
 	-lpam
+
+pam_x2goincludedir = $(includedir)/security/
+pam_x2goinclude_HEADERS =			\
+    $(top_srcdir)/include/pam-x2go.h		\
+    $(NULL)
 
 libexec_PROGRAMS = \
 	x2go-auth-check

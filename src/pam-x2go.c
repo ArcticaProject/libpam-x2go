@@ -38,6 +38,8 @@
 #include <security/pam_modutil.h>
 #include <security/pam_appl.h>
 
+#include "pam-x2go.h"
+
 #include "pam-x2go-children.h"
 #include "auth-check-path.h"
 
@@ -93,20 +95,20 @@ get_item (pam_handle_t * pamh, int type)
 
 	switch (type) {
 	case PAM_USER:
-		message.msg = "login:";
+		message.msg = PAM_X2GO_PROMPT_GUESTLOGIN;
 		break;
 	case PAM_TYPE_X2GO_USER:
-		message.msg = "remote login:";
+		message.msg = PAM_X2GO_PROMPT_USER;
 		break;
 	case PAM_TYPE_X2GO_SERVER:
-		message.msg = "remote host:";
+		message.msg = PAM_X2GO_PROMPT_HOST;;
 		break;
 	case PAM_AUTHTOK:
-		message.msg = "password:";
+		message.msg = PAM_X2GO_PROMPT_PASSWORD;
 		message.msg_style = PAM_PROMPT_ECHO_OFF;
 		break;
 	case PAM_TYPE_X2GO_COMMAND:
-		message.msg = "remote command:";
+		message.msg = PAM_X2GO_PROMPT_COMMAND;
 		break;
 	default:
 		return NULL;

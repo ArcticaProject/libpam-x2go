@@ -29,3 +29,16 @@ Description: PAM Module to auth against an X2Go server using PyHoca
  Auth and session PAM module that uses SSH to authenticate against
  an X2Go server as the remote host and user. Local account required.
  Most useful with the pam-temp-account module.
+
+Package: libpam-x2go-dev
+Section: libdevel
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+Description: PAM Module to auth against an X2Go server using PyHoca (development files)
+ Auth and session PAM module that uses SSH to authenticate against
+ an X2Go server as the remote host and user. Local account required.
+ Most useful with the pam-temp-account module.
+ .
+ This package contains the pam_x2go.so header files.
