@@ -12,9 +12,11 @@ include /usr/share/cdbs/1/rules/utils.mk
 DEB_MAKE_CHECK_TARGET = check
 
 # Remove .a and .la files from /lib/security
-binary-post-install/libpam-x2go::
+remove-cruft::
 	find $(DEB_DESTDIR)/lib/security -type f \
 	        \( -name '*.a' -o -name '*.la' \) \
 	            -exec rm '{}' +
 
+common-install-indep:: remove-cruft
+common-install-arch:: remove-cruft
 common-binary-post-install-arch:: list-missing
