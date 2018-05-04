@@ -26,8 +26,8 @@
 #define ALL_GOOD_SIGNAL  "Ar, ready to authenticate cap'n"
 
 void
-pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rhost, const char* ruser, const char* rsession);
+pam_sm_authenticate_helper (int *stdinpipe, const char* username, const char* rhost, const char* ruser, const char* rcommand);
 
 int
-session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rsession, const char * password);
+session_socket_handler (struct passwd * pwdent, int readypipe, const char * ruser, const char * rhost, const char * rcommand, const char * password);
 #endif //_PAM_X2GO_CHILDREN_H_
