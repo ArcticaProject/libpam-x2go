@@ -12,7 +12,7 @@ Build-Depends:
  libssh-dev,
  pkg-config,
  cdbs (>= 0.4.93~),
-Standards-Version: 4.1.1
+Standards-Version: 4.1.4
 Homepage: http://github.com/ArcticaProject/libpam-x2go
 Vcs-Git: https://github.com/ArcticaProject/libpam-x2go/
 Vcs-Browser: https://github.com/ArcticaProject/libpam-x2go/
