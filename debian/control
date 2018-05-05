@@ -12,7 +12,6 @@ Build-Depends:
  libssh-dev,
  pkg-config,
  cdbs (>= 0.4.93~),
- dh-autoreconf,
 Standards-Version: 4.1.1
 Homepage: http://github.com/ArcticaProject/libpam-x2go
 Vcs-Git: https://github.com/ArcticaProject/libpam-x2go/
