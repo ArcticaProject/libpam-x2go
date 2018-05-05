@@ -50,10 +50,10 @@ CLEANFILES +=							\
         $(NULL)
 
 nodist_libgtest_a_SOURCES =					\
-        gtest-all.cc					\
+        gtest-all.cc						\
         $(NULL)
 nodist_libgtest_main_a_SOURCES =				\
-        gtest_main.cc					\
+        gtest_main.cc						\
         $(NULL)
 
 libgtest_a_CPPFLAGS =						\
