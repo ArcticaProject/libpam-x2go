@@ -61,8 +61,8 @@ get_item (pam_handle_t * pamh, int type)
 	/* Check to see if we just have the value.  If we do, great
 	   let's dup it some we're consistently allocating memory */
 	if ((type == PAM_USER) || (type == PAM_AUTHTOK)) {
-		/* If it's not a session type we can use the PAM functions because the PAM
-		   functions don't support session type */
+		/* If it's not an X2Go parameter type we can use the PAM functions because the PAM
+		   functions don't support X2Go parameters */
 		char * value = NULL;
 		if (pam_get_item(pamh, type, (const void **)&value) == PAM_SUCCESS && value != NULL) {
 			return value;
@@ -158,11 +158,12 @@ get_item (pam_handle_t * pamh, int type)
 	char * retval = NULL;
 	if (promptval != NULL) { /* Can't believe it really would be at this point, but let's be sure */
 		if ((type == PAM_USER) || (type == PAM_AUTHTOK)) {
-			/* We can only use the PAM functions if it's not the session type */
+			/* We can only use the PAM functions for types supported by PAM */
 			pam_set_item(pamh, type, (const void *)promptval);
 			/* We're returning the value saved by PAM so we can clear promptval */
 			pam_get_item(pamh, type, (const void **)&retval);
 		}
+		/* Here we deal with all X2Go specific parameter types */
 		if (type == PAM_TYPE_X2GO_USER) {
 			/* The remote user can be saved globally */
 			if (global_x2go_user != NULL) {
