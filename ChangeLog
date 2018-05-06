@@ -528,7 +528,7 @@
 
 	* Neat little trick that I found in PAM Kerberos where it uses the
           PAM handle's version of the value so that there doesn't
-          have to be memory free'd in the returning function. 
+          have to be memory free'd in the returning function.
           Cleans some things up and removes a bunch of extra
           allocation
 

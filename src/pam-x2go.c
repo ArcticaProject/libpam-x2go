@@ -324,7 +324,7 @@ pam_sm_open_session (pam_handle_t *pamh, int flags, int argc, const char ** argv
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		
+
 		int ret = session_socket_handler(pwdent, sessionready[1], ruser, rhost, rcommand, password);
 
 		close(sessionready[1]);
@@ -379,7 +379,7 @@ done:
 	return retval;
 }
 
-/* Drop privs and try to kill the process with the PID of session_pid.  
+/* Drop privs and try to kill the process with the PID of session_pid.
    This ensures that we don't kill something important if there is PID wrap
    around.  */
 static int
@@ -415,7 +415,7 @@ unpriveleged_kill (struct passwd * pwdent)
 		   track that but there are a lot of reason that we could fail there and
 		   it's not a bad thing.  Really we're attempting a best effort to clean up
 		   we won't be able to guarantee it. */
-		_exit(EXIT_SUCCESS);	
+		_exit(EXIT_SUCCESS);
 	} else if (pid < 0) {
 		retval = PAM_SYSTEM_ERR;
 	} else {

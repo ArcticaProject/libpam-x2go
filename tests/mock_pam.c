@@ -73,7 +73,7 @@ int PAM_NONNULL((1)) pam_get_item (const pam_handle_t *pamh, int type, const voi
 		*value = pamh->conv;
 	else  if (pamh->item[type] != NULL)
 		*value = pamh->item[type];
-	else 
+	else
 		*value = NULL; /* will result in a prompt conversation */
 
 	return PAM_SUCCESS;
