@@ -1,10 +1,165 @@
-2017-05-31 13:39:56 +0200 Mike Gabriel (929f512)
+2018-05-07 15:09:40 +0200 Mike Gabriel (65c1819)
 
-	* release 0.0.1.1 (HEAD -> release-builds, master)
+	* release 0.0.2.0 (HEAD -> master, tag: 0.0.2.0)
+
+2018-05-06 13:15:57 +0200 Mike Gabriel (15d7d6d)
+
+	* src/pam-x2go.c: Update some comments.
+
+2018-05-06 12:50:22 +0200 Mike Gabriel (9d64da9)
+
+	* White-space clean-up. Remove whitespaces at EOL.
+
+2018-05-06 12:47:19 +0200 Mike Gabriel (bd832ce)
+
+	* tests/mock_guest.c: Remove comment that is no longer true.
+
+2018-05-05 17:22:56 +0200 Mike Gabriel (2a78373)
+
+	* debian/control: Bump Standards-Version: to 4.1.4. No changes
+          needed.
+
+2018-05-05 17:22:32 +0200 Mike Gabriel (8a60509)
+
+	* debian/control: Drop from B-D: dh-autoreconf. Not needed with CDBS.
+
+2018-05-05 17:07:01 +0200 Mike Gabriel (949f753)
+
+	* tests/Makefile.am: white-space fixes.
+
+2018-05-05 01:33:31 +0200 Mike Gabriel (1448478)
+
+	* debian/rules: Fix cruft removal.
+
+2018-05-05 00:40:13 +0200 Mike Gabriel (a246de8)
+
+	* unit tests: Fix them and reenable them.
+
+2018-05-04 22:30:29 +0200 Mike Gabriel (43e3871)
+
+	* .gitignore: Let us not ignore files, otherwise we miss flaws in
+          distclean.
+
+2018-05-04 22:29:38 +0200 Mike Gabriel (e65edde)
+
+	* Makefile.am: No quotes around value of ACLOCAL_AMFLAGS.
+
+2018-05-04 22:29:18 +0200 Mike Gabriel (72d85c7)
+
+	* README.md: Symlink README to it and put some more content in it.
+
+2018-05-04 22:16:14 +0200 Mike Gabriel (8ea169c)
+
+	* autogen.sh: Drop file. Unused.
+
+2018-05-04 15:49:37 +0200 Mike Gabriel (8784ada)
+
+	* include/pam-x2go.h: Add some missing files to Git.
+
+2018-05-04 15:22:19 +0200 Mike Gabriel (f77fe62)
+
+	* Re-layout Makefile.am files.
+
+2018-05-04 15:22:04 +0200 Mike Gabriel (6d18eb8)
+
+	* configure.ac: Set subdir-objects automake option.
+
+2018-05-04 15:10:25 +0200 Mike Gabriel (08757c3)
+
+	* debian/rules: Add CDBS's list-missing feature.
+
+2018-05-04 15:09:56 +0200 Mike Gabriel (74ee30f)
+
+	* include/pam-x2go.h: Move login prompt strings into public include
+          file, so it can be used by e.g. Arctica Greeter.
+
+2018-05-04 13:44:51 +0200 Mike Gabriel (4b2c517)
+
+	* src/pam-x2go-children.h: Fix not-yet-renamed rsession -> rcommand
+          in pam-x2go-children prototypes.
+
+2018-05-03 10:27:10 +0200 Mike Gabriel (fae5b91)
+
+	* PAM prompt: rename from "x2gosession" to "remote command".
+
+2018-05-03 10:26:35 +0200 Mike Gabriel (b2bcfc0)
+
+	* src/pam-x2go.c: Adapt some comments.
+
+2018-05-03 08:04:48 +0200 Mike Gabriel (b42a3b9)
+
+	* Don't use PAM_RUSER and PAM_RHOST. Not made for this. Introduce our
+          own PAM types (PAM_TYPE_X2GO_USER, _X2GO_SERVER,
+          _X2GO_COMMAND).
+
+2018-05-02 15:20:02 +0200 Mike Gabriel (c71e7aa)
+
+	* Add AC_CONFIG_MACRO variables, make autoreconf happy.
+
+2018-05-02 15:13:37 +0200 Mike Gabriel (bf75434)
+
+	* Makefile.am: Drop dist-hook. Makes localinstall configure option
+          obsolete, so also removed.
+
+2017-12-07 10:40:11 +0100 Mike Gabriel (197b9ce)
+
+	* .bzrignore: Drop file.
+
+2017-12-07 10:18:59 +0100 Mike Gabriel (5f4a442)
+
+	* debian/{control,rules}: Enable all hardening flags.
+
+2017-12-07 10:16:09 +0100 Mike Gabriel (7811a9f)
+
+	* debian/copyright: Update Source: URL and add Upstream-Contact:
+          field.
+
+2017-12-07 10:14:38 +0100 Mike Gabriel (0b1224f)
+
+	* debian/watch: Point to tarballs released by Arctica Project.
+
+2017-12-07 10:13:42 +0100 Mike Gabriel (a2a5b32)
+
+	* debian/changelog: Bump upstream version to a development version
+          number.
+
+2017-12-07 10:12:30 +0100 Mike Gabriel (1aa7144)
+
+	* debian/control: Don't suggest X2Go Client, Arctica Greeter remote
+          logon to X2Go works with pyhoca-cli, only.
+
+2017-12-07 10:11:53 +0100 Mike Gabriel (54d05d9)
+
+	* debian/control: Update Homepage: and Vcs-*: fields.
+
+2017-12-07 10:10:55 +0100 Mike Gabriel (58ef701)
+
+	* debian/control: Bump Standards-Version: to 4.1.1.
+
+2017-12-07 10:10:36 +0100 Mike Gabriel (0205aec)
+
+	* debian/control: Switch to Priority: optional.
+
+2017-12-07 10:09:58 +0100 Mike Gabriel (53ba929)
+
+	* debian/control: Adapt Maintainer: field to new upstream maintenance
+          team.
+
+2017-09-05 13:06:14 +0200 Mike Gabriel (08459c5)
+
+	* Merge branch 'EdwardBetts-spelling'
+
+2017-09-01 19:21:11 +0100 Edward Betts (4923c7e)
+
+	* correct spelling mistake
+
+2017-05-31 13:39:56 +0200 Mike Gabriel (10e55c5)
+
+	* release 0.0.1.1 (tag: 0.0.1.1)
 
 2015-11-12 04:13:53 +0000 Mike Gabriel (f5ebe2a)
 
-	* debian/changelog: Drop ~x2goX version suffix. (origin/master)
+	* debian/changelog: Drop ~x2goX version suffix.
 
 2013-11-27 14:52:55 +0100 Mike Gabriel (c0c134f)
 
@@ -20,12 +175,11 @@
 
 2013-04-27 13:44:37 +0200 Mike Gabriel (7bd3533)
 
-	* release 0.0.1.0 (tag: 0.0.1.0, build-main)
+	* release 0.0.1.0 (tag: 0.0.1.0)
 
 2013-04-26 00:57:56 +0200 Mike Gabriel (3fe5741)
 
 	* switch over to »x2gosession« as identifier used by pam_x2go and rls
-          (x2gosessiontype)
 
 2013-04-26 00:56:50 +0200 Mike Gabriel (96ce439)
 
@@ -528,7 +682,7 @@
 
 	* Neat little trick that I found in PAM Kerberos where it uses the
           PAM handle's version of the value so that there doesn't
-          have to be memory free'd in the returning function.
+          have to be memory free'd in the returning function. 
           Cleans some things up and removes a bunch of extra
           allocation
 

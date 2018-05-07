@@ -1,12 +1,13 @@
-libpam-x2go (0.0.1.99-0) UNRELEASED; urgency=medium
+libpam-x2go (0.0.2.0-0) unstable; urgency=medium
 
-  * Continue development...
+  * Upstream-provided Debian package for libpam-x2go.
+    See upstream ChangeLog for recent changes.
 
- -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Thu, 07 Dec 2017 10:13:16 +0100
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Mon, 07 May 2018 15:08:30 +0200
 
 libpam-x2go (0.0.1.1-0) unstable; urgency=low
 
-  * Upstream-provided Debian package for nx-libs.
+  * Upstream-provided Debian package for libpam-x2go.
     See upstream ChangeLog for recent changes.
 
  -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Wed, 31 May 2017 13:39:20 +0200
