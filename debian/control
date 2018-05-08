@@ -1,5 +1,5 @@
 Source: libpam-x2go
-Section: misc
+Section: admin
 Priority: optional
 Maintainer: Artica Project <devs@lists.arctica-project.org>
 Uploaders:
@@ -14,7 +14,7 @@ Build-Depends:
  pkg-config,
  cdbs (>= 0.4.93~),
 Standards-Version: 4.1.4
-Homepage: http://github.com/ArcticaProject/libpam-x2go
+Homepage: https://github.com/ArcticaProject/libpam-x2go
 Vcs-Git: https://github.com/ArcticaProject/libpam-x2go/
 Vcs-Browser: https://github.com/ArcticaProject/libpam-x2go/
 
@@ -25,10 +25,12 @@ Depends:
  ${misc:Depends},
 Suggests:
  pyhoca-cli,
-Description: PAM Module to auth against an X2Go server using PyHoca
+Description: PAM Module to check credentials against X2Go servers
  Auth and session PAM module that uses SSH to authenticate against
  an X2Go server as the remote host and user. Local account required.
- Most useful with the pam-temp-account module.
+ .
+ This PAM module is intended for facilitating Remote Logon into X2Go
+ servers using LightDM's Arctica Greeter.
 
 Package: libpam-x2go-dev
 Section: libdevel
@@ -36,9 +38,11 @@ Architecture: any
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
-Description: PAM Module to auth against an X2Go server using PyHoca (development files)
+Description: PAM Module to check credentials against X2Go servers (development files)
  Auth and session PAM module that uses SSH to authenticate against
  an X2Go server as the remote host and user. Local account required.
- Most useful with the pam-temp-account module.
+ .
+ This PAM module is intended for facilitating Remote Logon into X2Go
+ servers using LightDM's Arctica Greeter.
  .
  This package contains the pam_x2go.so header files.

@@ -11,6 +11,12 @@ include /usr/share/cdbs/1/rules/utils.mk
 
 DEB_MAKE_CHECK_TARGET = check
 
+#pre-build::
+#	cp README.md README
+#
+#cleanbuilddir::
+#	rm -f README
+
 # Remove .a and .la files from /lib/security
 remove-cruft::
 	find $(DEB_DESTDIR)/lib/security -type f \
@@ -20,3 +26,6 @@ remove-cruft::
 common-install-indep:: remove-cruft
 common-install-arch:: remove-cruft
 common-binary-post-install-arch:: list-missing
+
+get-orig-source:
+	uscan --noconf --force-download --rename --download-current-version --destdir=..
