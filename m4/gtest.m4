@@ -49,8 +49,7 @@ AC_DEFUN([CHECK_GTEST],
 
   AC_LANG_POP
 
-  AC_CHECK_FILES([$GTEST_SOURCE/src/gtest-all.cc]
-                 [$GTEST_SOURCE/src/gtest_main.cc],
+  AS_IF([test -e "$GTEST_SOURCE/src/gtest-all.cc" || test -e "$GTEST_SOURCE/src/gtest_main.cc"],
                  [have_gtest_source=yes],
                  [have_gtest_source=no])
 
