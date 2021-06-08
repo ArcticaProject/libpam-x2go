@@ -24,42 +24,48 @@ static struct passwd guest = { "guest",
 							   "/tmp",
 							   "/bin/true" };
 struct passwd *
-getpwnam (const char *username)
+getpwnam (const char __attribute__((unused)) *username)
 { return &guest; }
 
 int
-setgroups(size_t size, const gid_t *list)
+setgroups(size_t __attribute__((unused)) size,
+          const __attribute__((unused)) gid_t  *list)
 {
 	errno = EPERM;
 	return -1;
 }
 
 int
-setgid(gid_t gid)
+setgid(gid_t __attribute__((unused)) gid)
 { return 0; }
 
 int
-setuid(uid_t uid)
+setuid(uid_t  __attribute__((unused)) uid)
 { return 0; }
 
 int
-setegid(gid_t gid)
+setegid(gid_t __attribute__((unused)) gid)
 { return 0; }
 
 int
-seteuid(uid_t uid)
+seteuid(uid_t __attribute__((unused)) uid)
 { return 0; }
 
-int chmod(const char *path, mode_t mode)
+int chmod(const char __attribute__((unused)) *path,
+          mode_t __attribute__((unused)) mode)
 { return 0; }
 
-int chown(const char *path, uid_t owner, gid_t group)
+int chown(const char __attribute__((unused)) *path,
+          uid_t __attribute__((unused)) owner,
+          gid_t __attribute__((unused)) group)
 { return 0; }
 
-int execvp(const char *file, char *const argv[])
+int execvp(const char __attribute__((unused)) *file,
+           char __attribute__((unused)) *const argv[])
 {
 	return 0;
 }
+
 /* wrap _exit, to make sure the gcov_exit function installed with atexit()
    is really called to collect coverage statistics */
 void _exit (int exitcode)

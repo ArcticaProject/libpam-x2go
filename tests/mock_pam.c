@@ -21,8 +21,10 @@ struct pam_handle {
 	/* note: the other fields have been omitted */
 };
 
-int fake_conv (int num_msg, const struct pam_message **msg,
-				struct pam_response **resp, void *appdata_ptr)
+int fake_conv (int __attribute__((unused)) num_msg,
+               const struct pam_message **msg,
+               struct pam_response **resp,
+               void __attribute__((unused)) *appdata_ptr)
 {
 	struct pam_response *response = NULL;
 	response = malloc (sizeof (struct pam_response));
