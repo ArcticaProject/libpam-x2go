@@ -45,7 +45,10 @@ int fake_conv (int __attribute__((unused)) num_msg,
 	else if (strcmp((*msg)->msg, PAM_X2GO_PROMPT_COMMAND) == 0)
 		response->resp = strdup ("rcommand");
 	else
+	{
+		free(response);
 		return PAM_SYMBOL_ERR; /* leaks... */
+	}
 
 	*resp = response;
 
